@@ -9,12 +9,15 @@ import { EventTimeline } from '@/components/event-timeline';
 import type { MatchEvent } from '@/types';
 import { ArrowLeft, Download, Pencil, Save } from 'lucide-react';
 import { EditEventDialog, type DialogEvent } from '@/components/edit-event-dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface PastMatch {
     id: number;
     date: string;
     teams: string;
     competition: string;
+    venue: string;
     result: string;
     events: MatchEvent[];
     teamAName: string;
@@ -29,6 +32,7 @@ const matchesData: PastMatch[] = [
         teamAName: 'Cheetahs',
         teamBName: 'Lions',
         competition: 'U21', 
+        venue: 'Emirates Airline Park',
         result: '3-15',
         events: [
             { id: '1a', time: 300, team: 'A', type: 'Penalty', subType: 'Offside', description: 'Cheetahs offside at the ruck' },
@@ -43,6 +47,7 @@ const matchesData: PastMatch[] = [
         teamAName: 'Bulls',
         teamBName: 'Sharks',
         competition: 'Currie Cup', 
+        venue: 'Loftus Versfeld',
         result: '24-21',
         events: [
             { id: '2a', time: 120, team: 'A', type: 'Error', description: 'Referee communication error' },
@@ -58,6 +63,7 @@ const matchesData: PastMatch[] = [
         teamAName: 'Stormers',
         teamBName: 'Leinster',
         competition: 'URC Final', 
+        venue: 'DHL Stadium',
         result: '31-28',
         events: [
             { id: '3a', time: 180, team: 'A', type: 'Penalty', subType: 'Breakdown', description: 'Stormers holding on at the breakdown' },
@@ -86,12 +92,13 @@ const matchesData: PastMatch[] = [
 export default function MatchDetailPage({ params }: { params: { id: string } }) {
     const initialMatchData = matchesData.find(m => m.id.toString() === params.id);
 
-    const [match, setMatch] = useState(initialMatchData);
+    const [match, setMatch] = useState<PastMatch | undefined>(initialMatchData ? JSON.parse(JSON.stringify(initialMatchData)) : undefined);
     const [isEditing, setIsEditing] = useState(false);
     const [dialogState, setDialogState] = useState<{ isOpen: boolean; event?: DialogEvent }>({ isOpen: false });
     
     useEffect(() => {
-        setMatch(matchesData.find(m => m.id.toString() === params.id));
+        const matchData = matchesData.find(m => m.id.toString() === params.id);
+        setMatch(matchData ? JSON.parse(JSON.stringify(matchData)) : undefined);
         setIsEditing(false);
     }, [params.id]);
 
@@ -127,6 +134,21 @@ export default function MatchDetailPage({ params }: { params: { id: string } }) 
 
     const handleToggleEdit = () => {
         setIsEditing(!isEditing);
+    };
+
+    const handleDetailChange = (field: keyof PastMatch, value: string) => {
+        if (!match) return;
+        setMatch(prevMatch => {
+            if (!prevMatch) return prevMatch;
+            
+            const newMatch = { ...prevMatch, [field]: value };
+    
+            if (field === 'teamAName' || field === 'teamBName') {
+                newMatch.teams = `${newMatch.teamAName} vs ${newMatch.teamBName}`;
+            }
+            
+            return newMatch;
+        });
     };
 
     const handleDeleteEvent = (eventId: string) => {
@@ -214,12 +236,43 @@ export default function MatchDetailPage({ params }: { params: { id: string } }) 
                 <Card>
                     <CardHeader>
                         <CardTitle>Match Details</CardTitle>
-                        <CardDescription>{match.date} - {match.competition}</CardDescription>
+                        <CardDescription>
+                            {isEditing ? (
+                                <div className="flex gap-4 items-center pt-2">
+                                    <Input type="date" value={match.date} onChange={(e) => handleDetailChange('date', e.target.value)} />
+                                    <Input value={match.competition} onChange={(e) => handleDetailChange('competition', e.target.value)} placeholder="Competition"/>
+                                </div>
+                            ) : (
+                                `${match.date} - ${match.competition}`
+                            )}
+                        </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex justify-between items-center">
-                            <div className="text-lg font-semibold">{match.teams}</div>
-                            <div className="text-2xl font-mono font-bold">{match.result}</div>
+                        <div className="flex justify-between items-start gap-4">
+                            {isEditing ? (
+                                <div className="grid gap-4 w-full">
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <div>
+                                            <Label htmlFor="teamAName" className="text-muted-foreground">Team A</Label>
+                                            <Input id="teamAName" value={match.teamAName} onChange={(e) => handleDetailChange('teamAName', e.target.value)} />
+                                        </div>
+                                         <div>
+                                            <Label htmlFor="teamBName" className="text-muted-foreground">Team B</Label>
+                                            <Input id="teamBName" value={match.teamBName} onChange={(e) => handleDetailChange('teamBName', e.target.value)} />
+                                        </div>
+                                    </div>
+                                     <div>
+                                        <Label htmlFor="venue" className="text-muted-foreground">Venue</Label>
+                                        <Input id="venue" value={match.venue} onChange={(e) => handleDetailChange('venue', e.target.value)} />
+                                    </div>
+                                </div>
+                            ) : (
+                                <div>
+                                    <div className="text-lg font-semibold">{match.teams}</div>
+                                    <p className="text-sm text-muted-foreground">{match.venue}</p>
+                                </div>
+                            )}
+                            <div className="text-2xl font-mono font-bold text-right shrink-0">{match.result}</div>
                         </div>
                     </CardContent>
                 </Card>
