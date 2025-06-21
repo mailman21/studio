@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { EventTimeline } from '@/components/event-timeline';
 import type { MatchEvent } from '@/types';
-import { ArrowLeft, Download } from 'lucide-react';
+import { ArrowLeft, Download, Pencil, Save } from 'lucide-react';
+import { EditEventDialog, type DialogEvent } from '@/components/edit-event-dialog';
 
 interface PastMatch {
     id: number;
@@ -82,7 +84,16 @@ const matchesData: PastMatch[] = [
 ];
 
 export default function MatchDetailPage({ params }: { params: { id: string } }) {
-    const match = matchesData.find(m => m.id.toString() === params.id);
+    const initialMatchData = matchesData.find(m => m.id.toString() === params.id);
+
+    const [match, setMatch] = useState(initialMatchData);
+    const [isEditing, setIsEditing] = useState(false);
+    const [dialogState, setDialogState] = useState<{ isOpen: boolean; event?: DialogEvent }>({ isOpen: false });
+    
+    useEffect(() => {
+        setMatch(matchesData.find(m => m.id.toString() === params.id));
+        setIsEditing(false);
+    }, [params.id]);
 
     const formatTime = (totalSeconds: number) => {
         const minutes = Math.floor(totalSeconds / 60);
@@ -114,6 +125,48 @@ export default function MatchDetailPage({ params }: { params: { id: string } }) 
         document.body.removeChild(link);
     };
 
+    const handleToggleEdit = () => {
+        setIsEditing(!isEditing);
+    };
+
+    const handleDeleteEvent = (eventId: string) => {
+        if (!match) return;
+        setMatch({
+            ...match,
+            events: match.events.filter(e => e.id !== eventId)
+        });
+    };
+
+    const handleOpenDialog = (event?: MatchEvent) => {
+        if (event) {
+            setDialogState({ isOpen: true, event: { ...event } });
+        } else {
+            setDialogState({ isOpen: true, event: { id: `new-${Date.now()}`, time: 0, team: null, type: 'Comment', description: '' } });
+        }
+    };
+    
+    const handleSaveEvent = (savedEvent: DialogEvent) => {
+        if (!match) return;
+
+        const isNewEvent = savedEvent.id.toString().startsWith('new-');
+
+        if (isNewEvent) {
+            const newEvent: MatchEvent = {
+                ...savedEvent,
+                id: new Date().toISOString(),
+            };
+            setMatch({
+                ...match,
+                events: [...match.events, newEvent].sort((a, b) => a.time - b.time)
+            });
+        } else {
+            setMatch({
+                ...match,
+                events: match.events.map(e => e.id === savedEvent.id ? { ...e, ...savedEvent } : e).sort((a, b) => a.time - b.time)
+            });
+        }
+    };
+
     if (!match) {
         return (
             <div className="flex flex-col h-full">
@@ -135,7 +188,18 @@ export default function MatchDetailPage({ params }: { params: { id: string } }) 
     return (
         <div className="flex flex-col h-full">
             <PageHeader title={match.teams}>
-                <Button onClick={handleExport} variant="outline">
+                {isEditing ? (
+                    <Button onClick={handleToggleEdit}>
+                        <Save className="mr-2 h-4 w-4" />
+                        Save Changes
+                    </Button>
+                ) : (
+                    <Button onClick={handleToggleEdit} variant="outline">
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit Match
+                    </Button>
+                )}
+                <Button onClick={handleExport} variant="outline" disabled={isEditing}>
                     <Download className="mr-2 h-4 w-4" />
                     Export Timeline
                 </Button>
@@ -160,8 +224,23 @@ export default function MatchDetailPage({ params }: { params: { id: string } }) 
                     </CardContent>
                 </Card>
 
-                <EventTimeline events={match.events} teamAName={match.teamAName} teamBName={match.teamBName} />
+                <EventTimeline 
+                    events={match.events} 
+                    teamAName={match.teamAName} 
+                    teamBName={match.teamBName}
+                    isEditing={isEditing}
+                    onAddEvent={() => handleOpenDialog()}
+                    onEditEvent={handleOpenDialog}
+                    onDeleteEvent={handleDeleteEvent}
+                />
             </main>
+            <EditEventDialog 
+                dialogState={dialogState}
+                setDialogState={setDialogState}
+                onSave={handleSaveEvent}
+                teamAName={match.teamAName}
+                teamBName={match.teamBName}
+            />
         </div>
     );
 }
