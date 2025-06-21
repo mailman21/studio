@@ -49,6 +49,36 @@ const matchesData: PastMatch[] = [
             { id: '2d', time: 2100, team: null, type: 'Comment', description: 'Water break' },
         ]
     },
+    { 
+        id: 3, 
+        date: '2024-07-27', 
+        teams: 'Stormers vs Leinster',
+        teamAName: 'Stormers',
+        teamBName: 'Leinster',
+        competition: 'URC Final', 
+        result: '31-28',
+        events: [
+            { id: '3a', time: 180, team: 'A', type: 'Penalty', subType: 'Breakdown', description: 'Stormers holding on at the breakdown' },
+            { id: '3b', time: 420, team: 'B', type: 'Scrum', description: 'Scrum awarded to Leinster' },
+            { id: '3c', time: 750, team: 'B', type: 'Penalty', subType: 'Foul Play', description: 'High tackle by Leinster player' },
+            { id: '3d', time: 900, team: 'A', type: 'Free-Kick', description: 'Free-kick for Stormers at scrum' },
+            { id: '3e', time: 1230, team: null, type: 'Scrum', subType: 'Reset', description: 'Scrum reset' },
+            { id: '3f', time: 1500, team: 'A', type: 'Penalty', subType: 'Offside', description: 'Stormers defensive line offside' },
+            { id: '3g', time: 1800, team: null, type: 'Comment', description: 'Official water break' },
+            { id: '3h', time: 2100, team: null, type: 'Error', description: 'Referee communication error with TMO' },
+            { id: '3i', time: 2350, team: 'B', type: 'Penalty', subType: 'Breakdown', description: 'Leinster player not rolling away' },
+            { id: '3j', time: 2400, team: null, type: 'Comment', description: 'Half Time' },
+            { id: '3k', time: 2520, team: 'A', type: 'Scrum', description: 'Scrum to Stormers to start second half' },
+            { id: '3l', time: 2880, team: 'A', type: 'Penalty', subType: 'Lineout', description: 'Incorrect lineout throw by Stormers' },
+            { id: '3m', time: 3100, team: 'B', type: 'Non-Decision', subType: 'Foul Play', description: 'Potential foul play by Leinster, TMO review, no action taken' },
+            { id: '3n', time: 3600, team: 'A', type: 'Positive HID', description: 'Great advantage played by referee for Stormers' },
+            { id: '3o', time: 3900, team: 'B', type: 'Penalty', subType: 'Scrum', description: 'Leinster scrum collapse' },
+            { id: '3p', time: 4200, team: null, type: 'Scrum', subType: 'Reset', description: 'Another scrum reset' },
+            { id: '3q', time: 4500, team: 'A', type: 'Penalty', subType: 'Foul Play', description: 'Dangerous tackle by Stormers' },
+            { id: '3r', time: 4780, team: null, type: 'Error', description: 'Timekeeping error, corrected on screen' },
+            { id: '3s', time: 4800, team: null, type: 'Comment', description: 'Full Time' },
+        ]
+    },
 ];
 
 export default function MatchDetailPage({ params }: { params: { id: string } }) {

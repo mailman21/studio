@@ -8,6 +8,7 @@ import { ChevronRight } from 'lucide-react';
 const pastMatches = [
     { id: 1, date: '2024-07-20', teams: 'Cheetahs vs Lions', competition: 'U21', result: '3-15' },
     { id: 2, date: '2024-07-13', teams: 'Bulls vs Sharks', competition: 'Currie Cup', result: '24-21' },
+    { id: 3, date: '2024-07-27', teams: 'Stormers vs Leinster', competition: 'URC Final', result: '31-28' },
 ];
 
 export default function MatchesPage() {
