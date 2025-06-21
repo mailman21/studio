@@ -98,13 +98,33 @@ export default function ProfilePage() {
               id="competitions"
               defaultValue="U21, Currie Cup, Varsity Cup"
             />
-            <Label htmlFor="work-ons" className="mt-4 block">
-              Work-ons for Next Match
-            </Label>
-            <Textarea
-              id="work-ons"
-              defaultValue="- Maintain 5m discipline at scrum\n- Clearer communication at breakdown"
-            />
+            <div className="grid md:grid-cols-3 gap-4 mt-6">
+              <div>
+                  <Label htmlFor="work-ons">Work-ons</Label>
+                  <Textarea
+                      id="work-ons"
+                      className="mt-2"
+                      placeholder="Key development areas..."
+                      defaultValue="- Maintain 5m discipline at scrum&#x0a;- Clearer communication at breakdown"
+                  />
+              </div>
+              <div>
+                  <Label htmlFor="pre-match-notes">Pre-Match Notes</Label>
+                  <Textarea
+                      id="pre-match-notes"
+                      className="mt-2"
+                      placeholder="Team tendencies, specific plays..."
+                  />
+              </div>
+              <div>
+                  <Label htmlFor="video-review">Video Review</Label>
+                  <Textarea
+                      id="video-review"
+                      className="mt-2"
+                      placeholder="Clips to review, focus points..."
+                  />
+              </div>
+            </div>
           </CardContent>
         </Card>
 

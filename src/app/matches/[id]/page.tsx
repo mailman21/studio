@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { EventTimeline } from '@/components/event-timeline';
 import type { MatchEvent } from '@/types';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Download } from 'lucide-react';
 
 interface PastMatch {
     id: number;
@@ -54,6 +54,36 @@ const matchesData: PastMatch[] = [
 export default function MatchDetailPage({ params }: { params: { id: string } }) {
     const match = matchesData.find(m => m.id.toString() === params.id);
 
+    const formatTime = (totalSeconds: number) => {
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    };
+
+    const handleExport = () => {
+        if (!match) return;
+
+        const headers = ['Timestamp', 'Team', 'Event Type', 'Sub-Type', 'Description'];
+        const rows = match.events.map(event => [
+            `"${formatTime(event.time)}"`,
+            `"${event.team === 'A' ? match.teamAName : event.team === 'B' ? match.teamBName : 'N/A'}"`,
+            `"${event.type}"`,
+            `"${event.subType || ''}"`,
+            `"${event.description.replace(/"/g, '""')}"`
+        ]);
+
+        const csvContent = "data:text/csv;charset=utf-8," 
+            + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `match_${match.id}_events.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     if (!match) {
         return (
             <div className="flex flex-col h-full">
@@ -75,6 +105,10 @@ export default function MatchDetailPage({ params }: { params: { id: string } }) 
     return (
         <div className="flex flex-col h-full">
             <PageHeader title={match.teams}>
+                <Button onClick={handleExport} variant="outline">
+                    <Download className="mr-2 h-4 w-4" />
+                    Export Timeline
+                </Button>
                 <Button asChild variant="outline">
                     <Link href="/matches">
                         <ArrowLeft className="mr-2 h-4 w-4" />
