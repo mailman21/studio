@@ -1,9 +1,9 @@
 'use client';
 
+import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Edit } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 
 const pastMatches = [
     { id: 1, date: '2024-07-20', teams: 'Cheetahs vs Lions', competition: 'U21', result: '3-15' },
@@ -19,24 +19,23 @@ export default function MatchesPage() {
           <CardHeader>
             <CardTitle>Match History</CardTitle>
             <CardDescription>
-              Review and edit details from previous matches.
+              Review and view details from previous matches.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {pastMatches.map((match) => (
-              <div key={match.id} className="flex items-center justify-between p-3 rounded-lg border">
-                <div>
-                  <p className="font-semibold">{match.teams}</p>
-                  <p className="text-sm text-muted-foreground">{match.competition} - {match.date}</p>
+              <Link key={match.id} href={`/matches/${match.id}`} className="block rounded-lg border hover:bg-muted/50 transition-colors">
+                <div className="flex items-center justify-between p-3">
+                  <div>
+                    <p className="font-semibold">{match.teams}</p>
+                    <p className="text-sm text-muted-foreground">{match.competition} - {match.date}</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <p className="font-mono text-lg">{match.result}</p>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <p className="font-mono text-lg">{match.result}</p>
-                  <Button variant="outline" size="icon">
-                    <Edit className="h-4 w-4" />
-                    <span className="sr-only">Edit Match</span>
-                  </Button>
-                </div>
-              </div>
+              </Link>
             ))}
           </CardContent>
         </Card>

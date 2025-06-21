@@ -16,6 +16,7 @@ import {
   Timer,
   User,
   Shield,
+  LayoutDashboard,
 } from 'lucide-react';
 
 const Logo = () => (
@@ -41,6 +42,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <Link href="/">
                   <Timer />
                   <span>Live Match</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname.startsWith('/dashboard')} tooltip={{children: 'Dashboard'}}>
+                <Link href="/dashboard">
+                  <LayoutDashboard />
+                  <span>Dashboard</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
