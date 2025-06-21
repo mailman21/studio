@@ -3,7 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Play, Pause, RefreshCw } from 'lucide-react';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 type TimerProps = {
   time: number;
@@ -14,9 +14,18 @@ type TimerProps = {
 
 export function TimerComponent({ time, setTime, isRunning, setIsRunning }: TimerProps) {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const FIRST_HALF_END = 40 * 60;
+  const SECOND_HALF_END = 80 * 60;
 
   useEffect(() => {
     if (isRunning) {
+      if (
+        (time >= FIRST_HALF_END && time < FIRST_HALF_END + 2) ||
+        (time >= SECOND_HALF_END && time < SECOND_HALF_END + 2)
+      ) {
+        setIsRunning(false);
+      }
+
       intervalRef.current = setInterval(() => {
         setTime(prevTime => prevTime + 1);
       }, 1000);
@@ -31,9 +40,10 @@ export function TimerComponent({ time, setTime, isRunning, setIsRunning }: Timer
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning, setTime]);
+  }, [isRunning, setTime, time, setIsRunning]);
 
   const handleStartPause = () => {
+    if (time >= SECOND_HALF_END) return; 
     setIsRunning(!isRunning);
   };
 
@@ -48,14 +58,26 @@ export function TimerComponent({ time, setTime, isRunning, setIsRunning }: Timer
     return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
   };
 
+  const getMatchPhaseText = () => {
+    if (time >= SECOND_HALF_END) return 'Full Time';
+    if (!isRunning && time >= FIRST_HALF_END && time < SECOND_HALF_END) return 'Half Time';
+    if (time >= FIRST_HALF_END) return 'Second Half';
+    return 'First Half';
+  };
+
   return (
     <Card>
       <CardContent className="p-4 flex items-center justify-between">
-        <div className="text-4xl font-mono font-bold text-foreground">
-          {formatTime(time)}
+        <div className="text-center">
+            <div className="text-4xl font-mono font-bold text-foreground">
+                {formatTime(time)}
+            </div>
+            <div className="text-sm text-muted-foreground font-semibold uppercase tracking-wider">
+                {getMatchPhaseText()}
+            </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={handleStartPause} size="icon" variant="outline" aria-label={isRunning ? 'Pause timer' : 'Start timer'}>
+          <Button onClick={handleStartPause} size="icon" variant="outline" aria-label={isRunning ? 'Pause timer' : 'Start timer'} disabled={time >= SECOND_HALF_END}>
             {isRunning ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
           </Button>
           <Button onClick={handleReset} size="icon" variant="outline" aria-label="Reset timer">
