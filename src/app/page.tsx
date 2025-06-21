@@ -23,11 +23,9 @@ import {
   RotateCcw,
   PlusCircle,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-
-const TEAM_A = 'Cheetahs';
-const TEAM_B = 'Lions';
-const COMPETITION = 'U21';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 const eventIcons: Record<EventType, React.ElementType> = {
   Penalty: ShieldAlert,
@@ -124,6 +122,11 @@ export default function MatchPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [events, setEvents] = useState<MatchEvent[]>([]);
   const [dialogState, setDialogState] = useState<DialogState>({ isOpen: false });
+  const [teamA, setTeamA] = useState('Team A');
+  const [teamB, setTeamB] = useState('Team B');
+  const [competition, setCompetition] = useState('U21');
+  const [venue, setVenue] = useState('Local Pitch');
+
 
   const addEvent = useCallback(
     (event: Omit<MatchEvent, 'id' | 'time'>) => {
@@ -162,11 +165,30 @@ export default function MatchPage() {
         <div className="grid gap-6">
           <Card>
             <CardHeader>
-              <CardTitle>Match Details</CardTitle>
+                <CardTitle>Match Setup</CardTitle>
+                <CardDescription>Enter the details for the match before you start the timer.</CardDescription>
             </CardHeader>
-            <CardContent className="flex justify-between items-center">
-                <div className="text-lg font-semibold">{TEAM_A} vs {TEAM_B}</div>
-                <div className="text-muted-foreground">{COMPETITION}</div>
+            <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <Label htmlFor="teamA">Team A (Home)</Label>
+                        <Input id="teamA" value={teamA} onChange={(e) => setTeamA(e.target.value)} />
+                    </div>
+                    <div>
+                        <Label htmlFor="teamB">Team B (Away)</Label>
+                        <Input id="teamB" value={teamB} onChange={(e) => setTeamB(e.target.value)} />
+                    </div>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <Label htmlFor="competition">Competition</Label>
+                        <Input id="competition" value={competition} onChange={(e) => setCompetition(e.target.value)} />
+                    </div>
+                    <div>
+                        <Label htmlFor="venue">Venue</Label>
+                        <Input id="venue" value={venue} onChange={(e) => setVenue(e.target.value)} />
+                    </div>
+                </div>
             </CardContent>
           </Card>
           <TimerComponent
@@ -179,20 +201,20 @@ export default function MatchPage() {
 
         <div className="grid md:grid-cols-2 gap-6">
           <TeamPanel
-            teamName={TEAM_A}
+            teamName={teamA}
             team="A"
             onLogEvent={(type, subType) => handleLogEvent('A', type, subType)}
             onOpenDialog={(type) => handleOpenDialog('A', type)}
           />
           <TeamPanel
-            teamName={TEAM_B}
+            teamName={teamB}
             team="B"
             onLogEvent={(type, subType) => handleLogEvent('B', type, subType)}
             onOpenDialog={(type) => handleOpenDialog('B', type)}
           />
         </div>
 
-        <EventTimeline events={events} teamAName={TEAM_A} teamBName={TEAM_B} />
+        <EventTimeline events={events} teamAName={teamA} teamBName={teamB} />
       </main>
 
       <EventDialog
