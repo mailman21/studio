@@ -18,6 +18,7 @@ import {
   User,
   Shield,
   LayoutDashboard,
+  CreditCard,
 } from 'lucide-react';
 
 const Logo = () => (
@@ -67,6 +68,14 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <Link href="/matches">
                   <Shield />
                   <span>Past Matches</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname.startsWith('/subscription')} tooltip={{children: 'Subscription'}}>
+                <Link href="/subscription">
+                  <CreditCard />
+                  <span>Subscription</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
