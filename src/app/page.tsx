@@ -22,6 +22,8 @@ import {
   Zap,
   RotateCcw,
   PlusCircle,
+  ArrowLeftRight,
+  Clock,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -98,6 +100,16 @@ function TeamPanel({
             <Button variant="outline" size="icon" onClick={() => onLogEvent('Scrum', 'Reset')}>
                 <RotateCcw className="size-4" />
                 <span className="sr-only">Scrum Reset</span>
+            </Button>
+        </div>
+        
+        <div className="flex gap-2">
+            <Button variant="outline" className="flex-1 justify-start gap-2" onClick={() => onLogEvent('Penalty', 'Lineout')}>
+                <ArrowLeftRight className="size-4" /> Lineout
+            </Button>
+            <Button variant="outline" size="icon" onClick={() => onLogEvent('Penalty', 'L2m')}>
+                <Clock className="size-4" />
+                <span className="sr-only">L2M</span>
             </Button>
         </div>
 
