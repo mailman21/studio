@@ -4,8 +4,8 @@ import { AppLayout } from '@/components/app-layout';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'RefAssist',
-  description: 'Referee assistance and statistics tracking.',
+  title: 'WhistleWise',
+  description: 'WhistleWise: Referee assistance and statistics tracking, built by Coding Hub.',
 };
 
 export default function RootLayout({
