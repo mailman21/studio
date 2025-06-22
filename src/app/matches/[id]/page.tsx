@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -89,7 +90,9 @@ const matchesData: PastMatch[] = [
     },
 ];
 
-export default function MatchDetailPage({ params }: { params: { id: string } }) {
+export default function MatchDetailPage() {
+    const params = useParams<{ id: string }>();
+
     const initialMatchData = matchesData.find(m => m.id.toString() === params.id);
 
     const [match, setMatch] = useState<PastMatch | undefined>(initialMatchData ? JSON.parse(JSON.stringify(initialMatchData)) : undefined);
