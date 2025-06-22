@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Save, Calendar, Clock, Zap } from 'lucide-react';
+import { Save, Calendar, Clock, Zap, Upload, PlayCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Table,
@@ -22,6 +22,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import Image from 'next/image';
+import { useRef } from 'react';
 
 const fitnessTests = [
   { test: '40m Sprint', result: '5.2s', date: '2024-07-15' },
@@ -49,7 +51,29 @@ const trainingSchedule = [
   { activity: 'Match Prep', date: 'Friday, 6:00 PM', location: 'Clubhouse' },
 ];
 
+const videoClips = [
+  { id: 1, title: 'Breakdown Decision', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby breakdown', description: 'Reviewing a key decision at the breakdown from the last match.' },
+  { id: 2, title: 'Scrum Engagement', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby scrum', description: 'Analyzing scrum setup and engagement sequence.' },
+  { id: 3, title: 'Offside Line Management', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby defense', description: 'Checking positioning and management of the offside line during open play.' },
+];
+
 export default function ProfilePage() {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // In a real app, you'd upload this file to a storage service.
+      // For this demo, we'll just log it to the console.
+      console.log('Selected file:', file.name);
+      alert(`File "${file.name}" selected. In a real app, this would be uploaded.`);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       <PageHeader title="My Profile">
@@ -211,6 +235,52 @@ export default function ProfilePage() {
               <Button variant="outline">Connect</Button>
             </div>
           </CardContent>
+        </Card>
+        
+        <Card>
+            <CardHeader>
+                <CardTitle>Video Library</CardTitle>
+                <CardDescription>
+                    Upload and review video clips for learning and analysis.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="flex justify-end mb-4">
+                    <Button onClick={handleUploadClick}>
+                        <Upload className="mr-2 h-4 w-4" />
+                        Upload Clip
+                    </Button>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        className="hidden"
+                        accept="video/*"
+                    />
+                </div>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {videoClips.map((clip) => (
+                        <div key={clip.id} className="border rounded-lg overflow-hidden group">
+                            <div className="relative aspect-video">
+                                <Image 
+                                    src={clip.thumbnail} 
+                                    alt={clip.title} 
+                                    fill
+                                    className="object-cover"
+                                    data-ai-hint={clip.hint} 
+                                />
+                                <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <PlayCircle className="h-12 w-12 text-white" />
+                                </div>
+                            </div>
+                            <div className="p-4 bg-card">
+                                <h3 className="font-semibold truncate">{clip.title}</h3>
+                                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{clip.description}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
         </Card>
       </main>
     </div>
