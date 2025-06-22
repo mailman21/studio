@@ -16,11 +16,11 @@ import {
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Line, LineChart } from 'recharts';
 
 const coachRatingsData = [
-  { match: 'Match 1', rating: 8.5 },
-  { match: 'Match 2', rating: 7.8 },
-  { match: 'Match 3', rating: 9.0 },
-  { match: 'Match 4', rating: 8.2 },
-  { match: 'Match 5', rating: 8.8 },
+  { match: 'Cheetahs vs Lions (U21)', rating: 8.5 },
+  { match: 'Bulls vs Sharks (Currie Cup)', rating: 7.8 },
+  { match: 'Stormers vs Leinster (URC Final)', rating: 9.0 },
+  { match: 'Lions vs Bulls (Currie Cup)', rating: 8.2 },
+  { match: 'Sharks vs Stormers (U21)', rating: 8.8 },
 ];
 
 const chartConfigBar = {
@@ -31,11 +31,11 @@ const chartConfigBar = {
 };
 
 const statTrendsData = [
-  { match: 'Match 1', penalties: 8, errors: 3, scrums: 12 },
-  { match: 'Match 2', penalties: 6, errors: 2, scrums: 10 },
-  { match: 'Match 3', penalties: 5, errors: 1, scrums: 15 },
-  { match: 'Match 4', penalties: 7, errors: 4, scrums: 11 },
-  { match: 'Match 5', penalties: 4, errors: 2, scrums: 13 },
+  { match: 'Cheetahs vs Lions (U21)', penalties: 8, errors: 3, scrums: 12 },
+  { match: 'Bulls vs Sharks (Currie Cup)', penalties: 6, errors: 2, scrums: 10 },
+  { match: 'Stormers vs Leinster (URC Final)', penalties: 5, errors: 1, scrums: 15 },
+  { match: 'Lions vs Bulls (Currie Cup)', penalties: 7, errors: 4, scrums: 11 },
+  { match: 'Sharks vs Stormers (U21)', penalties: 4, errors: 2, scrums: 13 },
 ];
 
 const chartConfigLine = {
@@ -63,18 +63,22 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle>Coach Ratings</CardTitle>
               <CardDescription>
-                Your performance ratings from coaches over the last 5 matches.
+                Your performance ratings from coaches across recent matches.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={chartConfigBar} className="h-[250px] w-full">
-                <BarChart accessibilityLayer data={coachRatingsData} margin={{ top: 20, right: 20, left: -10, bottom: 0 }}>
+              <ChartContainer config={chartConfigBar} className="h-[300px] w-full">
+                <BarChart accessibilityLayer data={coachRatingsData} margin={{ top: 20, right: 20, left: -10, bottom: 60 }}>
                   <CartesianGrid vertical={false} />
                   <XAxis
                     dataKey="match"
                     tickLine={false}
                     tickMargin={10}
                     axisLine={false}
+                    angle={-30}
+                    textAnchor="end"
+                    interval={0}
+                    height={80}
                   />
                   <YAxis domain={[0, 10]} />
                   <ChartTooltip
@@ -90,22 +94,26 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle>Referee Stat Trends</CardTitle>
               <CardDescription>
-                Key statistics trends over the last 5 matches.
+                Key statistics trends over recent matches.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <ChartContainer config={chartConfigLine} className="h-[250px] w-full">
+              <ChartContainer config={chartConfigLine} className="h-[300px] w-full">
                 <LineChart
                   accessibilityLayer
                   data={statTrendsData}
-                  margin={{ top: 20, right: 20, left: -10, bottom: 0 }}
+                  margin={{ top: 20, right: 20, left: -10, bottom: 60 }}
                 >
                   <CartesianGrid vertical={false} />
-                  <XAxis
+                   <XAxis
                     dataKey="match"
                     tickLine={false}
                     axisLine={false}
-                    tickMargin={8}
+                    tickMargin={10}
+                    angle={-30}
+                    textAnchor="end"
+                    interval={0}
+                    height={80}
                   />
                   <YAxis />
                   <ChartTooltip
