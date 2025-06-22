@@ -4,12 +4,7 @@ import Link from 'next/link';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChevronRight } from 'lucide-react';
-
-const pastMatches = [
-    { id: 1, date: '2024-07-20', teams: 'Cheetahs vs Lions', competition: 'U21', result: '3-15' },
-    { id: 2, date: '2024-07-13', teams: 'Bulls vs Sharks', competition: 'Currie Cup', result: '24-21' },
-    { id: 3, date: '2024-07-27', teams: 'Stormers vs Leinster', competition: 'URC Final', result: '31-28' },
-];
+import { matchesData } from '@/types';
 
 export default function MatchesPage() {
   return (
@@ -24,7 +19,7 @@ export default function MatchesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {pastMatches.map((match) => (
+            {matchesData.map((match) => (
               <Link key={match.id} href={`/matches/${match.id}`} className="block rounded-lg border hover:bg-muted/50 transition-colors">
                 <div className="flex items-center justify-between p-3">
                   <div>

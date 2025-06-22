@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { PageHeader } from '@/components/page-header';
 import { TimerComponent } from '@/components/timer-component';
 import { EventDialog, type DialogState } from '@/components/event-dialog';
@@ -12,7 +13,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { MatchEvent, EventType } from '@/types';
+import type { MatchEvent, EventType, PastMatch } from '@/types';
+import { matchesData } from '@/types';
+import { useToast } from '@/hooks/use-toast';
 import {
   AlertTriangle,
   CheckCircle,
@@ -24,6 +27,7 @@ import {
   PlusCircle,
   ArrowLeftRight,
   Clock,
+  Save,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -140,6 +144,8 @@ export default function MatchPage() {
   const [teamB, setTeamB] = useState('Team B');
   const [competition, setCompetition] = useState('U21');
   const [venue, setVenue] = useState('Local Pitch');
+  const router = useRouter();
+  const { toast } = useToast();
 
 
   const addEvent = useCallback(
@@ -171,10 +177,48 @@ export default function MatchPage() {
   ) => {
     setDialogState({ isOpen: true, team, type });
   };
+  
+  const handleFinishMatch = () => {
+    setIsRunning(false);
+  
+    const newMatch: PastMatch = {
+      id: Math.max(0, ...matchesData.map(m => m.id)) + 1,
+      date: new Date().toISOString().split('T')[0],
+      teams: `${teamA} vs ${teamB}`,
+      competition,
+      venue,
+      result: 'N/A', // Placeholder result, can be edited later
+      events: [...events].reverse(), // Reverse to get chronological order
+      teamAName: teamA,
+      teamBName: teamB,
+    };
+  
+    matchesData.push(newMatch);
+  
+    toast({
+      title: "Match Saved!",
+      description: "The live match has been saved to your history.",
+    });
+  
+    // Reset state for next match
+    setTime(0);
+    setEvents([]);
+    setTeamA('Team A');
+    setTeamB('Team B');
+    setCompetition('U21');
+    setVenue('Local Pitch');
+  
+    router.push(`/matches/${newMatch.id}`);
+  };
 
   return (
     <div className="flex flex-col h-full">
-      <PageHeader title="Live Match" />
+      <PageHeader title="Live Match">
+        <Button onClick={handleFinishMatch} disabled={events.length === 0 && time === 0}>
+            <Save className="mr-2 h-4 w-4" />
+            Finish & Save Match
+        </Button>
+      </PageHeader>
       <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
         <div className="grid gap-6">
           <Card>
@@ -186,21 +230,21 @@ export default function MatchPage() {
                 <div className="grid md:grid-cols-2 gap-4">
                     <div>
                         <Label htmlFor="teamA">Team A (Home)</Label>
-                        <Input id="teamA" value={teamA} onChange={(e) => setTeamA(e.target.value)} />
+                        <Input id="teamA" value={teamA} onChange={(e) => setTeamA(e.target.value)} disabled={isRunning || events.length > 0} />
                     </div>
                     <div>
                         <Label htmlFor="teamB">Team B (Away)</Label>
-                        <Input id="teamB" value={teamB} onChange={(e) => setTeamB(e.target.value)} />
+                        <Input id="teamB" value={teamB} onChange={(e) => setTeamB(e.target.value)} disabled={isRunning || events.length > 0} />
                     </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                     <div>
                         <Label htmlFor="competition">Competition</Label>
-                        <Input id="competition" value={competition} onChange={(e) => setCompetition(e.target.value)} />
+                        <Input id="competition" value={competition} onChange={(e) => setCompetition(e.target.value)} disabled={isRunning || events.length > 0} />
                     </div>
                     <div>
                         <Label htmlFor="venue">Venue</Label>
-                        <Input id="venue" value={venue} onChange={(e) => setVenue(e.target.value)} />
+                        <Input id="venue" value={venue} onChange={(e) => setVenue(e.target.value)} disabled={isRunning || events.length > 0} />
                     </div>
                 </div>
             </CardContent>
