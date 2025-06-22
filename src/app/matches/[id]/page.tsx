@@ -1,14 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { EventTimeline } from '@/components/event-timeline';
 import type { MatchEvent } from '@/types';
-import { ArrowLeft, Download, Pencil, Save } from 'lucide-react';
+import { ArrowLeft, Download, Pencil, Save, Upload } from 'lucide-react';
 import { EditEventDialog, type DialogEvent } from '@/components/edit-event-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,6 +23,8 @@ interface PastMatch {
     events: MatchEvent[];
     teamAName: string;
     teamBName: string;
+    coachRating?: number;
+    coachReportUrl?: string;
 }
 
 const matchesData: PastMatch[] = [
@@ -39,7 +41,8 @@ const matchesData: PastMatch[] = [
             { id: '1a', time: 300, team: 'A', type: 'Penalty', subType: 'Offside', description: 'Cheetahs offside at the ruck' },
             { id: '1b', time: 650, team: 'B', type: 'Scrum', description: 'Scrum to Lions' },
             { id: '1c', time: 920, team: 'B', type: 'Penalty', subType: 'Foul Play', description: 'Lions high tackle' },
-        ]
+        ],
+        coachRating: 85,
     },
     { 
         id: 2, 
@@ -55,7 +58,9 @@ const matchesData: PastMatch[] = [
             { id: '2b', time: 800, team: 'B', type: 'Free-Kick', description: 'Free-kick to Sharks' },
             { id: '2c', time: 1500, team: 'A', type: 'Penalty', subType: 'Breakdown', description: 'Bulls holding on' },
             { id: '2d', time: 2100, team: null, type: 'Comment', description: 'Water break' },
-        ]
+        ],
+        coachRating: 78,
+        coachReportUrl: '/reports/match-2-report.pdf'
     },
     { 
         id: 3, 
@@ -86,7 +91,8 @@ const matchesData: PastMatch[] = [
             { id: '3q', time: 4500, team: 'A', type: 'Penalty', subType: 'Foul Play', description: 'Dangerous tackle by Stormers' },
             { id: '3r', time: 4780, team: null, type: 'Error', description: 'Timekeeping error, corrected on screen' },
             { id: '3s', time: 4800, team: null, type: 'Comment', description: 'Full Time' },
-        ]
+        ],
+        coachRating: 92,
     },
 ];
 
@@ -98,6 +104,7 @@ export default function MatchDetailPage() {
     const [match, setMatch] = useState<PastMatch | undefined>(initialMatchData ? JSON.parse(JSON.stringify(initialMatchData)) : undefined);
     const [isEditing, setIsEditing] = useState(false);
     const [dialogState, setDialogState] = useState<{ isOpen: boolean; event?: DialogEvent }>({ isOpen: false });
+    const fileInputRef = useRef<HTMLInputElement>(null);
     
     useEffect(() => {
         const matchData = matchesData.find(m => m.id.toString() === params.id);
@@ -139,7 +146,7 @@ export default function MatchDetailPage() {
         setIsEditing(!isEditing);
     };
 
-    const handleDetailChange = (field: keyof PastMatch, value: string) => {
+    const handleDetailChange = (field: keyof PastMatch, value: string | number) => {
         if (!match) return;
         setMatch(prevMatch => {
             if (!prevMatch) return prevMatch;
@@ -191,6 +198,21 @@ export default function MatchDetailPage() {
             });
         }
     };
+
+    const handleUploadClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            console.log('Selected file:', file.name);
+            alert(`File "${file.name}" selected. In a real app, this would be uploaded and the URL saved.`);
+            // In a real app, you would upload the file and then call:
+            // handleDetailChange('coachReportUrl', uploadedFileUrl);
+        }
+    };
+
 
     if (!match) {
         return (
@@ -277,6 +299,67 @@ export default function MatchDetailPage() {
                             )}
                             <div className="text-2xl font-mono font-bold text-right shrink-0">{match.result}</div>
                         </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Coach Feedback</CardTitle>
+                        <CardDescription>Review and manage coach feedback for this match.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        {isEditing ? (
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4 items-center">
+                                    <div>
+                                        <Label htmlFor="coachRating">Coach Rating (/100)</Label>
+                                        <Input 
+                                            id="coachRating" 
+                                            type="number" 
+                                            value={match.coachRating || ''} 
+                                            onChange={(e) => handleDetailChange('coachRating', parseInt(e.target.value, 10) || 0)} 
+                                            max={100} 
+                                            min={0}
+                                        />
+                                    </div>
+                                    <div className="text-right">
+                                        <Button variant="outline" onClick={handleUploadClick}>
+                                            <Upload className="mr-2 h-4 w-4" />
+                                            Upload Report
+                                        </Button>
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            onChange={handleFileChange}
+                                            className="hidden"
+                                            accept=".pdf,.doc,.docx"
+                                        />
+                                    </div>
+                                </div>
+                                {match.coachReportUrl && (
+                                    <p className="text-sm text-muted-foreground">
+                                        Current report: <a href={match.coachReportUrl} target="_blank" rel="noopener noreferrer" className="underline">{match.coachReportUrl.split('/').pop()}</a>
+                                    </p>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Coach Rating</p>
+                                    <p className="text-2xl font-bold">{match.coachRating ?? 'N/A'} / 100</p>
+                                </div>
+                                {match.coachReportUrl ? (
+                                    <Button asChild variant="outline">
+                                        <a href={match.coachReportUrl} target="_blank" rel="noopener noreferrer">
+                                            <Download className="mr-2 h-4 w-4" />
+                                            View Report
+                                        </a>
+                                    </Button>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">No report uploaded.</p>
+                                )}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
