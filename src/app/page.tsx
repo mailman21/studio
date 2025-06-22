@@ -37,6 +37,8 @@ const eventIcons: Record<EventType, React.ElementType> = {
   'Free-Kick': CheckCircle,
   'Positive HID': PlusCircle,
   Comment: MessageSquare,
+  Lineout: ArrowLeftRight,
+  'L2M': Clock,
 };
 
 function TeamPanel({
@@ -104,10 +106,10 @@ function TeamPanel({
         </div>
         
         <div className="flex gap-2">
-            <Button variant="outline" className="flex-1 justify-start gap-2" onClick={() => onLogEvent('Penalty', 'Lineout')}>
+            <Button variant="outline" className="flex-1 justify-start gap-2" onClick={() => onLogEvent('Lineout')}>
                 <ArrowLeftRight className="size-4" /> Lineout
             </Button>
-            <Button variant="outline" size="icon" onClick={() => onLogEvent('Penalty', 'L2m')}>
+            <Button variant="outline" size="icon" onClick={() => onLogEvent('L2M')}>
                 <Clock className="size-4" />
                 <span className="sr-only">L2M</span>
             </Button>
