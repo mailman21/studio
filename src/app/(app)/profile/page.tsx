@@ -33,29 +33,9 @@ import {
 } from '@/components/ui/dialog';
 import Image from 'next/image';
 import { useRef, useState, useEffect } from 'react';
-
-type FitnessTest = { id: string; test: string; result: string; date: string };
-type ScheduleItem = { id: string; activity: string; date: string; location: string };
-
-const initialFitnessTests: FitnessTest[] = [
-  { id: '1', test: '40m Sprint', result: '5.2s', date: '2024-07-15' },
-  { id: '2', test: 'Yo-Yo Test', result: 'Level 18.5', date: '2024-07-15' },
-  { id: '3', test: 'Bronco Test', result: '4m 50s', date: '2024-07-01' },
-];
-
-const initialTrainingSchedule: ScheduleItem[] = [
-  { id: '1', activity: 'Strength & Conditioning', date: 'Monday, 5:00 PM', location: 'Team Gym' },
-  { id: '2', activity: 'Video Review Session', date: 'Tuesday, 6:00 PM', location: 'Online' },
-  { id: '3', activity: 'On-field Drills', date: 'Wednesday, 5:30 PM', location: 'Club Fields' },
-  { id: '4', activity: 'Rest Day', date: 'Thursday', location: '' },
-  { id: '5', activity: 'Match Prep', date: 'Friday, 6:00 PM', location: 'Clubhouse' },
-];
-
-const videoClips = [
-  { id: 1, title: 'Breakdown Decision', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby breakdown', description: 'Reviewing a key decision at the breakdown from the last match.' },
-  { id: 2, title: 'Scrum Engagement', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby scrum', description: 'Analyzing scrum setup and engagement sequence.' },
-  { id: 3, title: 'Offside Line Management', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby defense', description: 'Checking positioning and management of the offside line during open play.' },
-];
+import { refereeProfileData, users } from '@/lib/users';
+import type { RefereeProfile, FitnessTest, ScheduleItem } from '@/types';
+import { useToast } from '@/hooks/use-toast';
 
 function FitnessTestDialog({ isOpen, onOpenChange, onSave, test }: { isOpen: boolean, onOpenChange: (open: boolean) => void, onSave: (test: FitnessTest) => void, test: FitnessTest | null }) {
     const [formData, setFormData] = useState<Omit<FitnessTest, 'id'>>({ test: '', result: '', date: '' });
@@ -156,17 +136,46 @@ function TrainingScheduleDialog({ isOpen, onOpenChange, onSave, item }: { isOpen
     );
 }
 
+
 export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
   
-  const [fitnessTests, setFitnessTests] = useState<FitnessTest[]>(initialFitnessTests);
-  const [trainingSchedule, setTrainingSchedule] = useState<ScheduleItem[]>(initialTrainingSchedule);
+  const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+  const [profile, setProfile] = useState<RefereeProfile | null>(null);
   
   const [isFitnessTestDialogOpen, setIsFitnessTestDialogOpen] = useState(false);
   const [editingFitnessTest, setEditingFitnessTest] = useState<FitnessTest | null>(null);
   
   const [isTrainingScheduleDialogOpen, setIsTrainingScheduleDialogOpen] = useState(false);
   const [editingScheduleItem, setEditingScheduleItem] = useState<ScheduleItem | null>(null);
+
+  useEffect(() => {
+    // This check is client-side only.
+    if (typeof window !== 'undefined') {
+        const email = sessionStorage.getItem('userEmail');
+        if (email) {
+            setCurrentUserEmail(email);
+            if (refereeProfileData[email]) {
+                setProfile(JSON.parse(JSON.stringify(refereeProfileData[email])));
+            }
+        }
+    }
+  }, []);
+
+  const handleProfileChange = (field: keyof RefereeProfile, value: string) => {
+    setProfile(prev => prev ? { ...prev, [field]: value } : null);
+  };
+
+  const handleSaveChanges = () => {
+    if (currentUserEmail && profile) {
+      refereeProfileData[currentUserEmail] = JSON.parse(JSON.stringify(profile));
+      toast({
+        title: 'Profile Saved',
+        description: 'Your changes have been successfully saved.',
+      });
+    }
+  };
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
@@ -180,50 +189,69 @@ export default function ProfilePage() {
     }
   };
 
-  // Fitness Test Handlers
   const handleOpenFitnessTestDialog = (test: FitnessTest | null) => {
     setEditingFitnessTest(test);
     setIsFitnessTestDialogOpen(true);
   };
 
   const handleSaveFitnessTest = (test: FitnessTest) => {
+    if (!profile) return;
+    const newProfile = { ...profile };
     if (editingFitnessTest) {
-      setFitnessTests(fitnessTests.map(t => t.id === test.id ? test : t));
+      newProfile.fitnessTests = profile.fitnessTests.map(t => t.id === test.id ? test : t);
     } else {
-      setFitnessTests([...fitnessTests, test]);
+      newProfile.fitnessTests = [...profile.fitnessTests, { ...test, id: new Date().toISOString() }];
     }
+    setProfile(newProfile);
     setIsFitnessTestDialogOpen(false);
     setEditingFitnessTest(null);
   };
 
   const handleDeleteFitnessTest = (testId: string) => {
-    setFitnessTests(fitnessTests.filter(t => t.id !== testId));
+    if (!profile) return;
+    setProfile({ ...profile, fitnessTests: profile.fitnessTests.filter(t => t.id !== testId) });
   };
   
-  // Training Schedule Handlers
   const handleOpenTrainingScheduleDialog = (item: ScheduleItem | null) => {
     setEditingScheduleItem(item);
     setIsTrainingScheduleDialogOpen(true);
   };
 
   const handleSaveScheduleItem = (item: ScheduleItem) => {
+    if (!profile) return;
+    const newProfile = { ...profile };
     if (editingScheduleItem) {
-      setTrainingSchedule(trainingSchedule.map(s => s.id === item.id ? item : s));
+      newProfile.trainingSchedule = profile.trainingSchedule.map(s => s.id === item.id ? item : s);
     } else {
-      setTrainingSchedule([...trainingSchedule, item]);
+      newProfile.trainingSchedule = [...profile.trainingSchedule, { ...item, id: new Date().toISOString() }];
     }
+    setProfile(newProfile);
     setIsTrainingScheduleDialogOpen(false);
     setEditingScheduleItem(null);
   };
   
   const handleDeleteScheduleItem = (itemId: string) => {
-    setTrainingSchedule(trainingSchedule.filter(s => s.id !== itemId));
+    if (!profile) return;
+    setProfile({ ...profile, trainingSchedule: profile.trainingSchedule.filter(s => s.id !== itemId) });
   };
+  
+  const currentUser = users.find(u => u.email === currentUserEmail);
+
+  if (!profile || !currentUser) {
+    return (
+        <div className="flex flex-col h-full">
+            <PageHeader title="My Profile" />
+            <main className="flex-1 p-6 flex items-center justify-center">
+              <p>Loading profile or profile not found...</p>
+            </main>
+        </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
       <PageHeader title="My Profile">
-        <Button>
+        <Button onClick={handleSaveChanges}>
           <Save className="mr-2 h-4 w-4" /> Save Changes
         </Button>
       </PageHeader>
@@ -239,7 +267,7 @@ export default function ProfilePage() {
               <AvatarFallback>RF</AvatarFallback>
             </Avatar>
             <div className="grid gap-1.5">
-              <CardTitle className="text-3xl">Demo Referee</CardTitle>
+              <CardTitle className="text-3xl">{currentUser.name}</CardTitle>
               <CardDescription>
                 Personal details and account settings.
               </CardDescription>
@@ -248,13 +276,13 @@ export default function ProfilePage() {
                   <Label htmlFor="age" className="text-muted-foreground">
                     Age:
                   </Label>
-                  <Input id="age" defaultValue="34" className="w-20" />
+                  <Input id="age" value={profile.age} onChange={(e) => handleProfileChange('age', e.target.value)} className="w-20" />
                 </div>
                 <div className="flex items-center gap-2">
                   <Label className="text-muted-foreground">Role:</Label>
                   <Input
                     id="role"
-                    defaultValue="Referee"
+                    value={currentUser.role}
                     disabled
                     className="w-28 bg-muted/50"
                   />
@@ -266,32 +294,38 @@ export default function ProfilePage() {
             <Label htmlFor="competitions">My Competitions</Label>
             <Input
               id="competitions"
-              defaultValue="U21, Currie Cup, Varsity Cup"
+              value={profile.competitions}
+              onChange={(e) => handleProfileChange('competitions', e.target.value)}
             />
             <div className="grid md:grid-cols-3 gap-4 mt-6">
               <div>
-                  <Label htmlFor="work-ons">Work-ons</Label>
+                  <Label htmlFor="work-ons">Work-ons (from Coach)</Label>
                   <Textarea
                       id="work-ons"
-                      className="mt-2"
+                      className="mt-2 bg-muted/50"
                       placeholder="Key development areas..."
-                      defaultValue="- Maintain 5m discipline at scrum&#x0a;- Clearer communication at breakdown"
+                      value={profile.workOns}
+                      readOnly
                   />
               </div>
               <div>
-                  <Label htmlFor="pre-match-notes">Pre-Match Notes</Label>
+                  <Label htmlFor="pre-match-notes">Pre-Match Notes (from Coach)</Label>
                   <Textarea
                       id="pre-match-notes"
-                      className="mt-2"
+                      className="mt-2 bg-muted/50"
                       placeholder="Team tendencies, specific plays..."
+                      value={profile.preMatchNotes}
+                      readOnly
                   />
               </div>
               <div>
-                  <Label htmlFor="video-review">Video Review</Label>
+                  <Label htmlFor="video-review">Video Review (from Coach)</Label>
                   <Textarea
                       id="video-review"
-                      className="mt-2"
+                      className="mt-2 bg-muted/50"
                       placeholder="Clips to review, focus points..."
+                      value={profile.videoReview}
+                      readOnly
                   />
               </div>
             </div>
@@ -325,7 +359,7 @@ export default function ProfilePage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {fitnessTests.map(test => (
+                  {profile.fitnessTests.map(test => (
                     <TableRow key={test.id}>
                       <TableCell className="font-medium">{test.test}</TableCell>
                       <TableCell>{test.result}</TableCell>
@@ -363,7 +397,7 @@ export default function ProfilePage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {trainingSchedule.map(item => (
+                {profile.trainingSchedule.map(item => (
                   <div key={item.id} className="flex items-start justify-between gap-4 group">
                     <div className="flex items-start gap-4">
                         <Clock className="h-5 w-5 text-muted-foreground mt-1" />
@@ -435,7 +469,7 @@ export default function ProfilePage() {
                     />
                 </div>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {videoClips.map((clip) => (
+                    {profile.videoClips.map((clip) => (
                         <div key={clip.id} className="border rounded-lg overflow-hidden group">
                             <div className="relative aspect-video">
                                 <Image 

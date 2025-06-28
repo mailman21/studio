@@ -27,6 +27,21 @@ export interface PastMatch {
 export const penaltySubTypes = ['Offside', 'Breakdown', 'Scrum', 'Lineout', 'L2m', 'Foul Play'];
 export const nonDecisionSubTypes = ['Offside', 'ND', 'Error', 'Foul Play', 'Scrum', 'L2M', 'General play'];
 
+export type FitnessTest = { id: string; test: string; result: string; date: string };
+export type ScheduleItem = { id: string; activity: string; date: string; location: string };
+export type VideoClip = { id: number; title: string; thumbnail: string; hint: string, description: string };
+
+export interface RefereeProfile {
+    age: string;
+    competitions: string;
+    workOns: string;
+    preMatchNotes: string;
+    videoReview: string;
+    fitnessTests: FitnessTest[];
+    trainingSchedule: ScheduleItem[];
+    videoClips: VideoClip[];
+}
+
 export const matchesData: PastMatch[] = [
     { 
         id: 1, 
