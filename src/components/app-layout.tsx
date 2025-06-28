@@ -40,16 +40,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname.startsWith('/dashboard')} tooltip={{children: 'Dashboard'}}>
-                <Link href="/dashboard">
+              <SidebarMenuButton asChild isActive={pathname === '/'} tooltip={{children: 'Dashboard'}}>
+                <Link href="/">
                   <LayoutDashboard />
                   <span>Dashboard</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname === '/'} tooltip={{children: 'Live Match'}}>
-                <Link href="/">
+              <SidebarMenuButton asChild isActive={pathname.startsWith('/live-match')} tooltip={{children: 'Live Match'}}>
+                <Link href="/live-match">
                   <Timer />
                   <span>Live Match</span>
                 </Link>

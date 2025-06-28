@@ -32,7 +32,7 @@ export default function LoginPage() {
         title: 'Login Successful',
         description: "Welcome! You're now logged in.",
       });
-      router.push('/dashboard');
+      router.push('/');
     } else {
       toast({
         variant: 'destructive',
