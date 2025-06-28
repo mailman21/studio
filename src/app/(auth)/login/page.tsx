@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -8,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { users } from '@/lib/users';
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px" {...props}>
@@ -27,11 +29,15 @@ export default function LoginPage() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email === 'demo@whistlewise.com' && password === 'password') {
+    const user = users.find(u => u.email === email && u.password === password);
+
+    if (user) {
       sessionStorage.setItem('isAuthenticated', 'true');
+      sessionStorage.setItem('userRole', user.role);
+      sessionStorage.setItem('userName', user.name);
       toast({
         title: 'Login Successful',
-        description: "Welcome! You're now logged in.",
+        description: `Welcome back, ${user.name}!`,
       });
       router.push('/');
     } else {
@@ -48,7 +54,7 @@ export default function LoginPage() {
       <CardHeader>
         <CardTitle className="text-2xl">Login</CardTitle>
         <CardDescription>
-            Enter your email below to login. Use demo@whistlewise.com and password: password
+            Enter your credentials to log in. Demo accounts are available.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -58,7 +64,7 @@ export default function LoginPage() {
             <Input
               id="email"
               type="email"
-              placeholder="demo@whistlewise.com"
+              placeholder="referee@whistlewise.com"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
