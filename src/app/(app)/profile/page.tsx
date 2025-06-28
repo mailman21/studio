@@ -300,7 +300,7 @@ export default function ProfilePage() {
 
         <div className="grid md:grid-cols-2 gap-6">
           <Card>
-            <CardHeader className="flex items-center justify-between">
+            <CardHeader className="flex flex-row items-center justify-between">
               <div className='space-y-1.5'>
                 <CardTitle className="flex items-center gap-2">
                     <Zap className="h-5 w-5" />
@@ -347,8 +347,8 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
           <Card>
-            <CardHeader className="flex items-center justify-between">
-                <div>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div className="space-y-1.5">
                     <CardTitle className="flex items-center gap-2">
                         <Calendar className="h-5 w-5" />
                         Training Schedule

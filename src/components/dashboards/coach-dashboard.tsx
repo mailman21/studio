@@ -12,11 +12,11 @@ export function CoachDashboard() {
           <CardHeader>
             <CardTitle>Welcome, Coach!</CardTitle>
             <CardDescription>
-              This is the coach dashboard. More features coming soon!
+              Review match reports, provide feedback on referees, and track team performance here.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <p>You can review match reports, provide feedback on referees, and track team performance here.</p>
+            <p>Select a referee or a match to get started. More features coming soon!</p>
           </CardContent>
         </Card>
       </main>
