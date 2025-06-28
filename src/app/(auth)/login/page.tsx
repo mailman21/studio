@@ -28,6 +28,7 @@ export default function LoginPage() {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (email === 'demo@whistlewise.com' && password === 'password') {
+      sessionStorage.setItem('isAuthenticated', 'true');
       toast({
         title: 'Login Successful',
         description: "Welcome! You're now logged in.",
@@ -47,9 +48,7 @@ export default function LoginPage() {
       <CardHeader>
         <CardTitle className="text-2xl">Login</CardTitle>
         <CardDescription>
-            Enter your email below to login.
-            <br />
-            Use <strong>demo@whistlewise.com</strong> and password: <strong>password</strong>
+            Enter your email below to login. Use demo@whistlewise.com and password: password
         </CardDescription>
       </CardHeader>
       <CardContent>
