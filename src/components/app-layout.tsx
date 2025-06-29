@@ -2,7 +2,6 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import Image from 'next/image';
 import {
   SidebarProvider,
   Sidebar,
@@ -23,8 +22,10 @@ import {
 } from 'lucide-react';
 
 const Logo = () => (
-    <div className="flex items-center p-2">
-      <Image src="/logo.png" alt="WhistleWise Logo" width={144} height={30} priority />
+    <div className="flex h-16 items-center justify-center">
+      <Link href="/" className="text-xl font-bold text-foreground tracking-tight">
+        WhistleWise
+      </Link>
     </div>
 );
 
@@ -34,7 +35,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <Sidebar>
-        <SidebarHeader>
+        <SidebarHeader className="p-0 border-b">
           <Logo />
         </SidebarHeader>
         <SidebarContent>
