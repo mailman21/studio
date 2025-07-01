@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { PageHeader } from '@/components/page-header';
@@ -10,116 +9,12 @@ import { Button } from '@/components/ui/button';
 import { EventTimeline } from '@/components/event-timeline';
 import type { MatchEvent, PastMatch, GpsPoint } from '@/types';
 import { matchesData } from '@/types';
-import { ArrowLeft, Download, Pencil, Save, Upload, HeartPulse, Rabbit, Footprints } from 'lucide-react';
+import { ArrowLeft, Download, Pencil, Save, Upload } from 'lucide-react';
 import { EditEventDialog, type DialogEvent } from '@/components/edit-event-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { useToast } from '@/hooks/use-toast';
-
-const gpsChartConfig = {
-    heartRate: { label: "Heart Rate", color: "hsl(var(--destructive))" },
-    speed: { label: "Speed (m/s)", color: "hsl(var(--chart-2))" },
-};
-
-function GpsAnalysis({ match, onGpsUpload }: { match: PastMatch, onGpsUpload: (file: File) => void }) {
-    const gpsFileInputRef = useRef<HTMLInputElement>(null);
-
-    const handleUploadClick = () => {
-        gpsFileInputRef.current?.click();
-    };
-
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            onGpsUpload(file);
-        }
-    };
-    
-    if (!match.gpsData) {
-        return (
-            <Card>
-                <CardHeader>
-                    <CardTitle>GPS & Biometric Analysis</CardTitle>
-                    <CardDescription>Upload GPS data from a smartwatch to analyze physical performance.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="flex flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed border-muted p-8 text-center">
-                        <Upload className="h-10 w-10 text-muted-foreground" />
-                        <p className="text-muted-foreground">No GPS data available for this match.</p>
-                        <Button onClick={handleUploadClick}>Upload GPX/FIT File</Button>
-                        <input
-                            type="file"
-                            ref={gpsFileInputRef}
-                            onChange={handleFileChange}
-                            className="hidden"
-                            accept=".gpx,.fit"
-                        />
-                    </div>
-                </CardContent>
-            </Card>
-        );
-    }
-
-    const avgHeartRate = Math.round(match.gpsData.reduce((acc, p) => acc + p.heartRate, 0) / match.gpsData.length);
-    const maxSpeed = Math.max(...match.gpsData.map(p => p.speed));
-    const totalDistance = 8.2; // Simulated
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle>GPS & Biometric Analysis</CardTitle>
-                <CardDescription>Performance data from the uploaded GPS file.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                    <div className="border rounded-lg p-4">
-                        <Footprints className="mx-auto h-8 w-8 text-primary mb-2"/>
-                        <p className="text-2xl font-bold">{totalDistance} km</p>
-                        <p className="text-sm text-muted-foreground">Total Distance</p>
-                    </div>
-                     <div className="border rounded-lg p-4">
-                        <HeartPulse className="mx-auto h-8 w-8 text-destructive mb-2"/>
-                        <p className="text-2xl font-bold">{avgHeartRate} bpm</p>
-                        <p className="text-sm text-muted-foreground">Average Heart Rate</p>
-                    </div>
-                     <div className="border rounded-lg p-4">
-                        <Rabbit className="mx-auto h-8 w-8 text-chart-2 mb-2"/>
-                        <p className="text-2xl font-bold">{(maxSpeed * 3.6).toFixed(1)} km/h</p>
-                        <p className="text-sm text-muted-foreground">Max Speed</p>
-                    </div>
-                </div>
-
-                <div>
-                    <h4 className="font-semibold mb-2">Heart Rate & Speed Over Time</h4>
-                     <ChartContainer config={gpsChartConfig} className="h-[300px] w-full">
-                        <LineChart data={match.gpsData} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
-                            <CartesianGrid vertical={false} />
-                            <XAxis dataKey="time" tickFormatter={(value) => `${Math.floor(value / 60)}'`} tickLine={false} axisLine={false} tickMargin={10} />
-                            <YAxis yAxisId="left" domain={[100, 200]} stroke="var(--color-heartRate)" />
-                            <YAxis yAxisId="right" orientation="right" domain={[0, 10]} stroke="var(--color-speed)" />
-                            <ChartTooltip content={<ChartTooltipContent />} />
-                            <Legend />
-                            <Line yAxisId="left" type="monotone" dataKey="heartRate" stroke="var(--color-heartRate)" strokeWidth={2} dot={false} />
-                            <Line yAxisId="right" type="monotone" dataKey="speed" stroke="var(--color-speed)" strokeWidth={2} dot={false} />
-                        </LineChart>
-                    </ChartContainer>
-                </div>
-                
-                <div>
-                    <h4 className="font-semibold mb-2">Positional Heatmap</h4>
-                    <div className="aspect-video w-full border rounded-lg overflow-hidden relative">
-                         <Image src="https://placehold.co/600x400.png" alt="Heatmap placeholder" layout="fill" objectFit="cover" data-ai-hint="field heatmap" />
-                         <div className="absolute inset-0 flex items-center justify-center bg-background/60">
-                            <p className="text-muted-foreground font-semibold">Heatmap Simulation</p>
-                         </div>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-    );
-}
+import { PerformanceAnalysis } from '@/components/performance-analysis';
 
 export default function MatchDetailPage() {
     const params = useParams<{ id: string }>();
@@ -430,7 +325,7 @@ export default function MatchDetailPage() {
                     </CardContent>
                 </Card>
 
-                <GpsAnalysis match={match} onGpsUpload={handleGpsUpload} />
+                <PerformanceAnalysis match={match} onGpsUpload={handleGpsUpload} />
                 
                 <EventTimeline 
                     events={match.events} 
