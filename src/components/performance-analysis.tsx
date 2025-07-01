@@ -49,7 +49,7 @@ import type { PastMatch, EventType, MatchEvent } from '@/types';
 
 const gpsChartConfig = {
   heartRate: { label: 'Heart Rate', color: 'hsl(var(--destructive))' },
-  speed: { label: 'Speed (m/s)', color: 'hsl(var(--chart-2))' },
+  speed: { label: 'Speed (km/h)', color: 'hsl(var(--chart-2))' },
 };
 
 const eventIcons: Record<EventType, React.ElementType> = {
@@ -133,6 +133,11 @@ export function PerformanceAnalysis({
     );
   }
 
+  const chartData = match.gpsData.map(p => ({
+    ...p,
+    speed: parseFloat((p.speed * 3.6).toFixed(1)),
+  }));
+
   const avgHeartRate = Math.round(
     match.gpsData.reduce((acc, p) => acc + p.heartRate, 0) /
       match.gpsData.length
@@ -192,7 +197,7 @@ export function PerformanceAnalysis({
                 className="h-[400px] w-full"
               >
                 <LineChart
-                  data={match.gpsData}
+                  data={chartData}
                   margin={{ top: 5, right: 20, left: -10, bottom: 20 }}
                 >
                   <CartesianGrid vertical={false} />
@@ -215,7 +220,7 @@ export function PerformanceAnalysis({
                   <YAxis
                     yAxisId="right"
                     orientation="right"
-                    domain={[0, 10]}
+                    domain={[0, 40]}
                     stroke="var(--color-speed)"
                     name="Speed"
                   />
@@ -231,6 +236,8 @@ export function PerformanceAnalysis({
                     stroke="var(--color-heartRate)"
                     strokeWidth={2}
                     dot={false}
+                    name="Heart Rate"
+                    unit=" bpm"
                   />
                   <Line
                     yAxisId="right"
@@ -239,6 +246,8 @@ export function PerformanceAnalysis({
                     stroke="var(--color-speed)"
                     strokeWidth={2}
                     dot={false}
+                    name="Speed"
+                    unit=" km/h"
                   />
 
                   {match.events.map(event => {
