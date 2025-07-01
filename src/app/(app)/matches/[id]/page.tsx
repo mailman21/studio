@@ -16,14 +16,51 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { useToast } from '@/hooks/use-toast';
 
 const gpsChartConfig = {
     heartRate: { label: "Heart Rate", color: "hsl(var(--destructive))" },
     speed: { label: "Speed (m/s)", color: "hsl(var(--chart-2))" },
 };
 
-function GpsAnalysis({ match }: { match: PastMatch }) {
-    if (!match.gpsData) return null;
+function GpsAnalysis({ match, onGpsUpload }: { match: PastMatch, onGpsUpload: (file: File) => void }) {
+    const gpsFileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleUploadClick = () => {
+        gpsFileInputRef.current?.click();
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            onGpsUpload(file);
+        }
+    };
+    
+    if (!match.gpsData) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>GPS & Biometric Analysis</CardTitle>
+                    <CardDescription>Upload GPS data from a smartwatch to analyze physical performance.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed border-muted p-8 text-center">
+                        <Upload className="h-10 w-10 text-muted-foreground" />
+                        <p className="text-muted-foreground">No GPS data available for this match.</p>
+                        <Button onClick={handleUploadClick}>Upload GPX/FIT File</Button>
+                        <input
+                            type="file"
+                            ref={gpsFileInputRef}
+                            onChange={handleFileChange}
+                            className="hidden"
+                            accept=".gpx,.fit"
+                        />
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
 
     const avgHeartRate = Math.round(match.gpsData.reduce((acc, p) => acc + p.heartRate, 0) / match.gpsData.length);
     const maxSpeed = Math.max(...match.gpsData.map(p => p.speed));
@@ -33,7 +70,7 @@ function GpsAnalysis({ match }: { match: PastMatch }) {
         <Card>
             <CardHeader>
                 <CardTitle>GPS & Biometric Analysis</CardTitle>
-                <CardDescription>Simulated performance data from the match.</CardDescription>
+                <CardDescription>Performance data from the uploaded GPS file.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
@@ -93,6 +130,7 @@ export default function MatchDetailPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [dialogState, setDialogState] = useState<{ isOpen: boolean; event?: DialogEvent }>({ isOpen: false });
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { toast } = useToast();
     
     useEffect(() => {
         const matchData = matchesData.find(m => m.id.toString() === params.id);
@@ -199,6 +237,47 @@ export default function MatchDetailPage() {
             // In a real app, you would upload the file and then call:
             // handleDetailChange('coachReportUrl', uploadedFileUrl);
         }
+    };
+
+    const handleGpsUpload = (file: File) => {
+        // In a real app, you would parse the GPX/FIT file here.
+        // For this demo, we'll just generate new simulated data to show the UI update.
+        const generateGpsData = (durationInSeconds: number, points: number): GpsPoint[] => {
+            const data: GpsPoint[] = [];
+            let lastHeartRate = 120;
+            for (let i = 0; i < points; i++) {
+                const time = Math.floor((i / points) * durationInSeconds);
+                lastHeartRate += (Math.random() - 0.48) * 10;
+                lastHeartRate = Math.max(110, Math.min(185, lastHeartRate));
+                const speed = time % 300 < 50 ? Math.random() * 2 + 5 : Math.random() * 4;
+                data.push({
+                    time,
+                    heartRate: Math.round(lastHeartRate),
+                    speed: parseFloat(speed.toFixed(2)),
+                });
+            }
+            return data;
+        };
+
+        const newGpsData = generateGpsData(4800, 100);
+
+        setMatch(prevMatch => {
+            if (!prevMatch) return prevMatch;
+            const updatedMatch = { ...prevMatch, gpsData: newGpsData };
+
+            // Persist the change in our mock data source
+            const matchIndex = matchesData.findIndex(m => m.id === updatedMatch.id);
+            if (matchIndex !== -1) {
+                matchesData[matchIndex] = updatedMatch;
+            }
+
+            return updatedMatch;
+        });
+
+        toast({
+            title: "GPS Data Uploaded",
+            description: `Simulated data from ${file.name} has been processed.`,
+        });
     };
 
 
@@ -351,7 +430,7 @@ export default function MatchDetailPage() {
                     </CardContent>
                 </Card>
 
-                <GpsAnalysis match={match} />
+                <GpsAnalysis match={match} onGpsUpload={handleGpsUpload} />
                 
                 <EventTimeline 
                     events={match.events} 

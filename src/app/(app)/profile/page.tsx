@@ -425,27 +425,6 @@ export default function ProfilePage() {
             </CardContent>
           </Card>
         </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Smartwatch Integration</CardTitle>
-            <CardDescription>
-              Connect your smartwatch to automatically track heart rate, GPS
-              data, and more during matches.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between rounded-lg border p-4">
-              <div>
-                <h3 className="font-medium">Connect your device</h3>
-                <p className="text-sm text-muted-foreground">
-                  Status: Not Connected
-                </p>
-              </div>
-              <Button variant="outline">Connect</Button>
-            </div>
-          </CardContent>
-        </Card>
         
         <Card>
             <CardHeader>
