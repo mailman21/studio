@@ -13,15 +13,14 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from '@/components/ui/chart';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Line, LineChart } from 'recharts';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Line, LineChart, Area, AreaChart } from 'recharts';
+import { matchesData } from '@/types';
+import { Activity, Gauge, HeartPulse, Trophy } from 'lucide-react';
 
-const coachRatingsData = [
-  { match: 'Cheetahs vs Lions (U21)', rating: 8.5 },
-  { match: 'Bulls vs Sharks (Currie Cup)', rating: 7.8 },
-  { match: 'Stormers vs Leinster (URC Final)', rating: 9.0 },
-  { match: 'Lions vs Bulls (Currie Cup)', rating: 8.2 },
-  { match: 'Sharks vs Stormers (U21)', rating: 8.8 },
-];
+const coachRatingsData = matchesData
+    .filter(m => m.coachRating)
+    .map(m => ({ match: m.teams, rating: m.coachRating! / 10 }))
+    .slice(-5);
 
 const chartConfigBar = {
   rating: {
@@ -30,13 +29,15 @@ const chartConfigBar = {
   },
 };
 
-const statTrendsData = [
-  { match: 'Cheetahs vs Lions (U21)', penalties: 8, errors: 3, scrums: 12 },
-  { match: 'Bulls vs Sharks (Currie Cup)', penalties: 6, errors: 2, scrums: 10 },
-  { match: 'Stormers vs Leinster (URC Final)', penalties: 5, errors: 1, scrums: 15 },
-  { match: 'Lions vs Bulls (Currie Cup)', penalties: 7, errors: 4, scrums: 11 },
-  { match: 'Sharks vs Stormers (U21)', penalties: 4, errors: 2, scrums: 13 },
-];
+const statTrendsData = matchesData.slice(-5).map(match => {
+    return {
+        match: match.teams,
+        penalties: match.events.filter(e => e.type === 'Penalty').length,
+        errors: match.events.filter(e => e.type === 'Error').length,
+        scrums: match.events.filter(e => e.type === 'Scrum').length,
+    }
+});
+
 
 const chartConfigLine = {
   penalties: {
@@ -53,11 +54,62 @@ const chartConfigLine = {
   },
 };
 
+const latestMatchWithGps = [...matchesData].reverse().find(m => m.gpsData);
+
+const physicalChartConfig = {
+  heartRate: {
+    label: 'Heart Rate (bpm)',
+    color: 'hsl(var(--destructive))',
+  },
+};
+
 export function RefereeDashboard() {
   return (
     <div className="flex flex-col h-full">
       <PageHeader title="Dashboard" />
       <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Last Match Rating</CardTitle>
+                    <Trophy className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{coachRatingsData.slice(-1)[0]?.rating.toFixed(1) ?? 'N/A'} / 10</div>
+                    <p className="text-xs text-muted-foreground">from coach feedback</p>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Distance</CardTitle>
+                    <Activity className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">8.2 km</div>
+                    <p className="text-xs text-muted-foreground">in last match (simulated)</p>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Avg. Heart Rate</CardTitle>
+                    <HeartPulse className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">145 bpm</div>
+                    <p className="text-xs text-muted-foreground">in last match (simulated)</p>
+                </CardContent>
+            </Card>
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Max Speed</CardTitle>
+                    <Gauge className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">28.5 km/h</div>
+                    <p className="text-xs text-muted-foreground">in last match (simulated)</p>
+                </CardContent>
+            </Card>
+        </div>
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
@@ -146,6 +198,43 @@ export function RefereeDashboard() {
             </CardContent>
           </Card>
         </div>
+        {latestMatchWithGps && latestMatchWithGps.gpsData && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Last Match Physical Performance</CardTitle>
+              <CardDescription>
+                Simulated heart rate data from {latestMatchWithGps.teams}.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={physicalChartConfig} className="h-[200px] w-full">
+                <AreaChart
+                  data={latestMatchWithGps.gpsData}
+                  margin={{ top: 5, right: 20, left: -10, bottom: 0 }}
+                >
+                  <CartesianGrid vertical={false} />
+                  <XAxis
+                    dataKey="time"
+                    tickFormatter={(value) => `${Math.floor(value / 60)}'`}
+                    tickLine={false}
+                    axisLine={false}
+                    tickMargin={10}
+                  />
+                  <YAxis domain={[100, 200]} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Area
+                    dataKey="heartRate"
+                    type="monotone"
+                    fill="var(--color-heartRate)"
+                    fillOpacity={0.4}
+                    stroke="var(--color-heartRate)"
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        )}
       </main>
     </div>
   );

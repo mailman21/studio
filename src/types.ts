@@ -10,6 +10,12 @@ export interface MatchEvent {
   description: string;
 }
 
+export interface GpsPoint {
+  time: number; // in seconds, matches event time
+  heartRate: number; // bpm
+  speed: number; // m/s
+}
+
 export interface PastMatch {
     id: number;
     date: string;
@@ -22,6 +28,7 @@ export interface PastMatch {
     teamBName: string;
     coachRating?: number;
     coachReportUrl?: string;
+    gpsData?: GpsPoint[];
 }
 
 export const penaltySubTypes = ['Offside', 'Breakdown', 'Scrum', 'Lineout', 'L2m', 'Foul Play'];
@@ -41,6 +48,27 @@ export interface RefereeProfile {
     trainingSchedule: ScheduleItem[];
     videoClips: VideoClip[];
 }
+
+const generateGpsData = (durationInSeconds: number, points: number): GpsPoint[] => {
+    const data: GpsPoint[] = [];
+    let lastHeartRate = 120;
+    for (let i = 0; i < points; i++) {
+        const time = Math.floor((i / points) * durationInSeconds);
+        
+        lastHeartRate += (Math.random() - 0.48) * 10;
+        lastHeartRate = Math.max(110, Math.min(185, lastHeartRate)); 
+        
+        const speed = time % 300 < 50 ? Math.random() * 2 + 5 : Math.random() * 4;
+
+        data.push({
+            time,
+            heartRate: Math.round(lastHeartRate),
+            speed: parseFloat(speed.toFixed(2)),
+        });
+    }
+    return data;
+};
+
 
 export const matchesData: PastMatch[] = [
     { 
@@ -108,5 +136,6 @@ export const matchesData: PastMatch[] = [
             { id: '3s', time: 4800, team: null, type: 'Comment', description: 'Full Time' },
         ],
         coachRating: 92,
+        gpsData: generateGpsData(4800, 100),
     },
 ];
