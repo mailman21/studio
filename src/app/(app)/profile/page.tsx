@@ -34,7 +34,7 @@ import {
 import Image from 'next/image';
 import { useRef, useState, useEffect } from 'react';
 import { refereeProfileData, users } from '@/lib/users';
-import type { RefereeProfile, FitnessTest, ScheduleItem } from '@/types';
+import type { RefereeProfile, FitnessTest, ScheduleItem, UserRole } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 
 function FitnessTestDialog({ isOpen, onOpenChange, onSave, test }: { isOpen: boolean, onOpenChange: (open: boolean) => void, onSave: (test: FitnessTest) => void, test: FitnessTest | null }) {
@@ -154,9 +154,10 @@ export default function ProfilePage() {
     // This check is client-side only.
     if (typeof window !== 'undefined') {
         const email = sessionStorage.getItem('userEmail');
+        const role = sessionStorage.getItem('userRole') as UserRole;
         if (email) {
             setCurrentUserEmail(email);
-            if (refereeProfileData[email]) {
+            if (role === 'referee' && refereeProfileData[email]) {
                 setProfile(JSON.parse(JSON.stringify(refereeProfileData[email])));
             }
         }
@@ -237,16 +238,64 @@ export default function ProfilePage() {
   
   const currentUser = users.find(u => u.email === currentUserEmail);
 
-  if (!profile || !currentUser) {
+  if (!currentUser) {
     return (
         <div className="flex flex-col h-full">
             <PageHeader title="My Profile" />
             <main className="flex-1 p-6 flex items-center justify-center">
-              <p>Loading profile or profile not found...</p>
+              <p>Loading profile...</p>
             </main>
         </div>
     );
   }
+
+  // Handle non-referee users
+  if (currentUser.role !== 'referee') {
+    return (
+      <div className="flex flex-col h-full">
+        <PageHeader title="My Profile" />
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center gap-6">
+              <Avatar className="h-24 w-24">
+                <AvatarImage
+                  src="https://placehold.co/100x100.png"
+                  alt={currentUser.name}
+                  data-ai-hint="person portrait"
+                />
+                <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+              <div className="grid gap-1.5">
+                <CardTitle className="text-3xl">{currentUser.name}</CardTitle>
+                <CardDescription className="capitalize">
+                  Role: {currentUser.role}
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p>Email: {currentUser.email}</p>
+              <p className="mt-4 text-sm text-muted-foreground">
+                Detailed profile management is available for referee accounts.
+              </p>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
+  // Handle referee profile not having loaded yet
+  if (!profile) {
+    return (
+        <div className="flex flex-col h-full">
+            <PageHeader title="My Profile" />
+            <main className="flex-1 p-6 flex items-center justify-center">
+              <p>Loading referee profile data...</p>
+            </main>
+        </div>
+    );
+  }
+
 
   return (
     <div className="flex flex-col h-full">
