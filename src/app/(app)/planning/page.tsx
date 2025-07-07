@@ -7,13 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { upcomingMatchesData, type UpcomingMatch } from '@/types';
-import { Calendar, MapPin, Edit, Save } from 'lucide-react';
+import { Calendar, MapPin, Edit, Save, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { NewMatchDialog } from '@/components/new-match-dialog';
 
 export default function PlanningPage() {
-    // Use a deep copy so local edits don't affect the master data until saved
     const [matches, setMatches] = useState<UpcomingMatch[]>(() => JSON.parse(JSON.stringify(upcomingMatchesData)));
     const [editingMatchId, setEditingMatchId] = useState<number | null>(null);
+    const [isNewMatchDialogOpen, setIsNewMatchDialogOpen] = useState(false);
     const { toast } = useToast();
 
     const handleNoteChange = (matchId: number, newNotes: string) => {
@@ -28,7 +29,6 @@ export default function PlanningPage() {
         const updatedMatch = matches.find(m => m.id === matchId);
         if (!updatedMatch) return;
         
-        // Find the match in the master data source and update it to persist changes for the session
         const masterMatchIndex = upcomingMatchesData.findIndex(m => m.id === matchId);
         if (masterMatchIndex !== -1) {
             upcomingMatchesData[masterMatchIndex].notes = updatedMatch.notes;
@@ -40,55 +40,91 @@ export default function PlanningPage() {
         setEditingMatchId(null);
     };
 
+    const handleAddNewMatch = (newMatchData: Omit<UpcomingMatch, 'id' | 'notes'>) => {
+        const newId = Math.max(0, ...upcomingMatchesData.map(m => m.id), ...matches.map(m => m.id)) + 1;
+        const newMatch: UpcomingMatch = {
+            id: newId,
+            ...newMatchData,
+            notes: '',
+        };
+        
+        upcomingMatchesData.push(newMatch);
+        setMatches(prev => [...prev, newMatch].sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+        
+        toast({
+            title: 'Match Added!',
+            description: `${newMatch.teams} has been added to your upcoming matches.`,
+        });
+    };
+
+
     return (
         <div className="flex flex-col h-full">
-            <PageHeader title="Future Match Planning" />
+            <PageHeader title="Future Match Planning">
+                <Button onClick={() => setIsNewMatchDialogOpen(true)}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Match
+                </Button>
+            </PageHeader>
             <main className="flex-1 overflow-y-auto p-4 md:p-6">
                 <div className="space-y-6">
-                    {matches.map(match => (
-                        <Card key={match.id}>
-                            <CardHeader>
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <CardTitle>{match.teams}</CardTitle>
-                                        <CardDescription className="pt-1">{match.competition}</CardDescription>
+                    {matches.length > 0 ? (
+                        matches.map(match => (
+                            <Card key={match.id}>
+                                <CardHeader>
+                                    <div className="flex justify-between items-start">
+                                        <div>
+                                            <CardTitle>{match.teams}</CardTitle>
+                                            <CardDescription className="pt-1">{match.competition}</CardDescription>
+                                        </div>
+                                        <div className="text-right text-sm">
+                                            <p className="flex items-center justify-end gap-2">
+                                                <Calendar className="h-4 w-4 text-muted-foreground" /> {match.date}
+                                            </p>
+                                            <p className="flex items-center justify-end gap-2 text-muted-foreground">
+                                                <MapPin className="h-4 w-4" /> {match.location}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="text-right text-sm">
-                                        <p className="flex items-center justify-end gap-2">
-                                            <Calendar className="h-4 w-4 text-muted-foreground" /> {match.date}
-                                        </p>
-                                        <p className="flex items-center justify-end gap-2 text-muted-foreground">
-                                            <MapPin className="h-4 w-4" /> {match.location}
-                                        </p>
-                                    </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <Label htmlFor={`notes-${match.id}`}>My Prep Notes</Label>
-                                <Textarea
-                                    id={`notes-${match.id}`}
-                                    className="mt-2"
-                                    value={match.notes || ''}
-                                    onChange={e => handleNoteChange(match.id, e.target.value)}
-                                    placeholder="Add your pre-match thoughts, team analysis, key players to watch..."
-                                    readOnly={editingMatchId !== match.id}
-                                />
+                                </CardHeader>
+                                <CardContent>
+                                    <Label htmlFor={`notes-${match.id}`}>My Prep Notes</Label>
+                                    <Textarea
+                                        id={`notes-${match.id}`}
+                                        className="mt-2"
+                                        value={match.notes || ''}
+                                        onChange={e => handleNoteChange(match.id, e.target.value)}
+                                        placeholder="Add your pre-match thoughts, team analysis, key players to watch..."
+                                        readOnly={editingMatchId !== match.id}
+                                    />
+                                </CardContent>
+                                <CardFooter className="flex justify-end">
+                                    {editingMatchId === match.id ? (
+                                        <Button onClick={() => handleSaveNote(match.id)}>
+                                            <Save className="mr-2 h-4 w-4" /> Save Notes
+                                        </Button>
+                                    ) : (
+                                        <Button variant="outline" onClick={() => setEditingMatchId(match.id)}>
+                                            <Edit className="mr-2 h-4 w-4" /> Edit Notes
+                                        </Button>
+                                    )}
+                                </CardFooter>
+                            </Card>
+                        ))
+                    ) : (
+                         <Card>
+                            <CardContent className="p-6 text-center text-muted-foreground">
+                                No upcoming matches planned. Add one to get started!
                             </CardContent>
-                            <CardFooter className="flex justify-end">
-                                {editingMatchId === match.id ? (
-                                    <Button onClick={() => handleSaveNote(match.id)}>
-                                        <Save className="mr-2 h-4 w-4" /> Save Notes
-                                    </Button>
-                                ) : (
-                                    <Button variant="outline" onClick={() => setEditingMatchId(match.id)}>
-                                        <Edit className="mr-2 h-4 w-4" /> Edit Notes
-                                    </Button>
-                                )}
-                            </CardFooter>
                         </Card>
-                    ))}
+                    )}
                 </div>
             </main>
+            <NewMatchDialog
+                isOpen={isNewMatchDialogOpen}
+                onOpenChange={setIsNewMatchDialogOpen}
+                onSave={handleAddNewMatch}
+            />
         </div>
     );
 }
