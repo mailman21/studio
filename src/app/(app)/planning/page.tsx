@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { upcomingMatchesData, type UpcomingMatch } from '@/types';
-import { Calendar, MapPin, PlusCircle, Upload } from 'lucide-react';
+import { Calendar, MapPin, PlusCircle, Upload, CalendarDown } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { NewMatchDialog } from '@/components/new-match-dialog';
 
@@ -75,6 +75,49 @@ export default function PlanningPage() {
             });
         }
     };
+    
+    const handleAddToCalendar = (match: UpcomingMatch) => {
+        // Assume match starts at 3 PM local time and lasts 2 hours
+        const startDate = new Date(`${match.date}T15:00:00`);
+        const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+
+        const toIcsDate = (date: Date) => {
+            return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+        }
+
+        const icsContent = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//WhistleWise//App//EN',
+            'BEGIN:VEVENT',
+            `UID:${match.id}@whistlewise.com`,
+            `DTSTAMP:${toIcsDate(new Date())}`,
+            `DTSTART:${toIcsDate(startDate)}`,
+            `DTEND:${toIcsDate(endDate)}`,
+            `SUMMARY:Match: ${match.teams}`,
+            `DESCRIPTION:Competition: ${match.competition}\\nNotes: ${match.notes || 'No notes.'}`,
+            `LOCATION:${match.location}`,
+            'END:VEVENT',
+            'END:VCALENDAR'
+        ].join('\r\n');
+
+        const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `whistlewise-match-${match.id}.ics`);
+        document.body.appendChild(link);
+        link.click();
+
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        toast({
+            title: 'Calendar Event Downloaded',
+            description: 'The match has been downloaded as an .ics file.',
+        });
+    };
 
 
     useEffect(() => {
@@ -129,10 +172,16 @@ export default function PlanningPage() {
                                         </p>
                                     )}
                                     </div>
-                                    <Button variant="outline" size="sm" onClick={() => handleUploadClick(match.id)}>
-                                        <Upload className="mr-2 h-4 w-4" />
-                                        {match.prepDocUrl ? 'Replace Prep Doc' : 'Upload Prep Doc'}
-                                    </Button>
+                                    <div className="flex items-center gap-2">
+                                        <Button variant="outline" size="sm" onClick={() => handleAddToCalendar(match)}>
+                                            <CalendarDown className="mr-2 h-4 w-4" />
+                                            Add to Calendar
+                                        </Button>
+                                        <Button variant="outline" size="sm" onClick={() => handleUploadClick(match.id)}>
+                                            <Upload className="mr-2 h-4 w-4" />
+                                            {match.prepDocUrl ? 'Replace Prep Doc' : 'Upload Prep Doc'}
+                                        </Button>
+                                    </div>
                                 </CardFooter>
                             </Card>
                         ))
