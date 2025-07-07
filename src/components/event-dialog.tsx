@@ -111,7 +111,7 @@ export function EventDialog({ dialogState, setDialogState, addEvent }: EventDial
       ? nonDecisionSubTypes
       : null;
 
-  const needsComment = type === 'Penalty' || type === 'Error' || type === 'Non-Decision' || type === 'Comment';
+  const needsComment = type === 'Penalty' || type === 'Error' || type === 'Non-Decision' || type === 'Comment' || type === 'HID';
 
   if (!isOpen || !type) return null;
 

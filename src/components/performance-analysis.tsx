@@ -44,6 +44,7 @@ import {
   PlusCircle,
   ArrowLeftRight,
   Clock,
+  BrainCircuit,
 } from 'lucide-react';
 import type { PastMatch, EventType, MatchEvent } from '@/types';
 
@@ -62,6 +63,7 @@ const eventIcons: Record<EventType, React.ElementType> = {
   Comment: MessageSquare,
   Lineout: ArrowLeftRight,
   L2M: Clock,
+  HID: BrainCircuit,
 };
 
 const EventIconTooltip = ({

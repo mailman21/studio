@@ -28,6 +28,7 @@ import {
   ArrowLeftRight,
   Clock,
   Save,
+  BrainCircuit,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -50,6 +51,7 @@ const eventIcons: Record<EventType, React.ElementType> = {
   Comment: MessageSquare,
   Lineout: ArrowLeftRight,
   'L2M': Clock,
+  'HID': BrainCircuit,
 };
 
 function TeamPanel({
@@ -129,6 +131,10 @@ function TeamPanel({
 
         <Button variant="outline" className="w-full justify-start gap-2" onClick={() => onLogEvent('Positive HID')}>
           <PlusCircle className="size-4" /> Positive HID
+        </Button>
+
+        <Button variant="outline" className="w-full justify-start gap-2" onClick={() => onOpenDialog('HID')}>
+          <BrainCircuit className="size-4" /> HID
         </Button>
 
         <Button variant="outline" className="w-full justify-start gap-2" onClick={() => onOpenDialog('Comment')}>

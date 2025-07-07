@@ -77,7 +77,7 @@ export function EditEventDialog({ dialogState, setDialogState, onSave, teamAName
 
   if (!isOpen || !formData) return null;
 
-  const allEventTypes: EventType[] = ['Penalty', 'Error', 'Non-Decision', 'Scrum', 'Free-Kick', 'Positive HID', 'Comment', 'Lineout', 'L2M'];
+  const allEventTypes: EventType[] = ['Penalty', 'Error', 'Non-Decision', 'Scrum', 'Free-Kick', 'Positive HID', 'Comment', 'Lineout', 'L2M', 'HID'];
   const subTypeOptions =
     formData.type === 'Penalty'
       ? penaltySubTypes

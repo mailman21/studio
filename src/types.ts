@@ -1,5 +1,5 @@
 export type EventCategory = 'Penalty' | 'Error' | 'Non-Decision';
-export type EventType = EventCategory | 'Scrum' | 'Free-Kick' | 'Positive HID' | 'Comment' | 'Lineout' | 'L2M';
+export type EventType = EventCategory | 'Scrum' | 'Free-Kick' | 'Positive HID' | 'Comment' | 'Lineout' | 'L2M' | 'HID';
 
 export interface MatchEvent {
   id: string;
