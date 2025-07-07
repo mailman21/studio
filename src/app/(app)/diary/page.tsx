@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Save, Target, BookOpen, Upload, Video, Mic, PlayCircle, Trash2 } from 'lucide-react';
+import { Target, BookOpen, Upload, Video, Mic, PlayCircle, Trash2 } from 'lucide-react';
 import { refereeProfileData } from '@/lib/users';
 import type { RefereeProfile, UserRole, VideoClip } from '@/types';
 
@@ -30,17 +30,15 @@ export default function DiaryPage() {
     }, []);
     
     const handleProfileChange = (field: keyof RefereeProfile, value: any) => {
-        setProfile(prev => prev ? { ...prev, [field]: value } : null);
-    };
-
-    const handleSaveChanges = () => {
-        if (currentUserEmail && profile) {
-            refereeProfileData[currentUserEmail] = JSON.parse(JSON.stringify(profile));
-            toast({
-                title: 'Diary Saved!',
-                description: 'Your notes and goals have been updated.',
-            });
-        }
+        // This function now updates the state AND persists it to our mock data source.
+        setProfile(prev => {
+            const newProfile = prev ? { ...prev, [field]: value } : null;
+            if (currentUserEmail && newProfile) {
+                // Persist changes to the in-memory store immediately.
+                refereeProfileData[currentUserEmail] = JSON.parse(JSON.stringify(newProfile));
+            }
+            return newProfile;
+        });
     };
 
     const handleVideoUploadClick = () => {
@@ -57,10 +55,11 @@ export default function DiaryPage() {
                 thumbnail: "https://placehold.co/600x400.png",
                 hint: "rugby action"
             };
+            // This will trigger the state update and immediate persistence.
             handleProfileChange('diaryVideoClips', [...profile.diaryVideoClips, newClip]);
             toast({
-                title: 'Video "Uploaded"',
-                description: `${file.name} has been added to your diary.`,
+                title: 'Video Added',
+                description: `${file.name} has been added to your diary and saved.`,
             });
         }
     };
@@ -68,6 +67,10 @@ export default function DiaryPage() {
     const handleDeleteVideo = (id: number) => {
         if (profile) {
             handleProfileChange('diaryVideoClips', profile.diaryVideoClips.filter(clip => clip.id !== id));
+            toast({
+                title: 'Video Removed',
+                description: 'The video has been removed from your diary.',
+            });
         }
     };
 
@@ -92,12 +95,7 @@ export default function DiaryPage() {
 
     return (
         <div className="flex flex-col h-full">
-            <PageHeader title="My Diary & Prep">
-                <Button onClick={handleSaveChanges}>
-                    <Save className="mr-2 h-4 w-4" />
-                    Save Changes
-                </Button>
-            </PageHeader>
+            <PageHeader title="My Diary & Prep" />
             <main className="flex-1 overflow-y-auto p-4 md:p-6 grid md:grid-cols-2 gap-6">
                 <div className="space-y-6">
                     <Card>
@@ -107,7 +105,7 @@ export default function DiaryPage() {
                                 Personal Development Goals
                             </CardTitle>
                             <CardDescription>
-                                What are your key areas for improvement? Set long-term and short-term goals.
+                                What are your key areas for improvement? Changes are saved automatically.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
@@ -128,7 +126,7 @@ export default function DiaryPage() {
                                 General Notes & Reflections
                             </CardTitle>
                             <CardDescription>
-                                A place for any other thoughts, feelings, or reflections.
+                                A place for any other thoughts, feelings, or reflections. Changes are saved automatically.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>

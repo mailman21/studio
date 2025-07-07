@@ -1,43 +1,32 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { upcomingMatchesData, type UpcomingMatch } from '@/types';
-import { Calendar, MapPin, Edit, Save, PlusCircle } from 'lucide-react';
+import { Calendar, MapPin, PlusCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { NewMatchDialog } from '@/components/new-match-dialog';
 
 export default function PlanningPage() {
     const [matches, setMatches] = useState<UpcomingMatch[]>(() => JSON.parse(JSON.stringify(upcomingMatchesData)));
-    const [editingMatchId, setEditingMatchId] = useState<number | null>(null);
     const [isNewMatchDialogOpen, setIsNewMatchDialogOpen] = useState(false);
     const { toast } = useToast();
 
     const handleNoteChange = (matchId: number, newNotes: string) => {
+        const matchIndex = upcomingMatchesData.findIndex(m => m.id === matchId);
+        if (matchIndex > -1) {
+            upcomingMatchesData[matchIndex].notes = newNotes;
+        }
+        
         setMatches(currentMatches =>
             currentMatches.map(match =>
                 match.id === matchId ? { ...match, notes: newNotes } : match
             )
         );
-    };
-
-    const handleSaveNote = (matchId: number) => {
-        const updatedMatch = matches.find(m => m.id === matchId);
-        if (!updatedMatch) return;
-        
-        const masterMatchIndex = upcomingMatchesData.findIndex(m => m.id === matchId);
-        if (masterMatchIndex !== -1) {
-            upcomingMatchesData[masterMatchIndex].notes = updatedMatch.notes;
-        }
-
-        toast({
-            title: `Notes for ${updatedMatch.teams} saved!`,
-        });
-        setEditingMatchId(null);
     };
 
     const handleAddNewMatch = (newMatchData: Omit<UpcomingMatch, 'id' | 'notes'>) => {
@@ -56,6 +45,10 @@ export default function PlanningPage() {
             description: `${newMatch.teams} has been added to your upcoming matches.`,
         });
     };
+
+    useEffect(() => {
+        setMatches(JSON.parse(JSON.stringify(upcomingMatchesData)));
+    }, []);
 
 
     return (
@@ -94,21 +87,9 @@ export default function PlanningPage() {
                                         className="mt-2"
                                         value={match.notes || ''}
                                         onChange={e => handleNoteChange(match.id, e.target.value)}
-                                        placeholder="Add your pre-match thoughts, team analysis, key players to watch..."
-                                        readOnly={editingMatchId !== match.id}
+                                        placeholder="Add your pre-match thoughts, team analysis, key players to watch... Notes save automatically."
                                     />
                                 </CardContent>
-                                <CardFooter className="flex justify-end">
-                                    {editingMatchId === match.id ? (
-                                        <Button onClick={() => handleSaveNote(match.id)}>
-                                            <Save className="mr-2 h-4 w-4" /> Save Notes
-                                        </Button>
-                                    ) : (
-                                        <Button variant="outline" onClick={() => setEditingMatchId(match.id)}>
-                                            <Edit className="mr-2 h-4 w-4" /> Edit Notes
-                                        </Button>
-                                    )}
-                                </CardFooter>
                             </Card>
                         ))
                     ) : (
