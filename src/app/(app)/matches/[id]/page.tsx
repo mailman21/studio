@@ -43,20 +43,32 @@ export default function MatchDetailPage() {
         if (!match) return;
 
         const headers = ['Timestamp', 'Team', 'Event Type', 'Sub-Type', 'Description'];
-        const rows = match.events.map(event => [
-            `"${formatTime(event.time)}"`,
-            `"${event.team === 'A' ? match.teamAName : event.team === 'B' ? match.teamBName : 'N/A'}"`,
-            `"${event.type}"`,
-            `"${event.subType || ''}"`,
-            `"${event.description.replace(/"/g, '""')}"`
-        ]);
-
-        const csvContent = "data:text/csv;charset=utf-8," 
-            + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
         
-        const encodedUri = encodeURI(csvContent);
+        const csvRows = match.events.map(event => {
+            const teamName = event.team === 'A' ? match.teamAName : event.team === 'B' ? match.teamBName : 'N/A';
+            const values = [
+                formatTime(event.time),
+                teamName,
+                event.type,
+                event.subType || '',
+                event.description,
+            ];
+
+            return values.map(value => {
+                const stringValue = String(value ?? '').replace(/"/g, '""');
+                if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+                    return `"${stringValue}"`;
+                }
+                return stringValue;
+            }).join(',');
+        });
+        
+        const csvContent = [headers.join(','), ...csvRows].join('\n');
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
         link.setAttribute("download", `match_${match.id}_events.csv`);
         document.body.appendChild(link);
         link.click();
