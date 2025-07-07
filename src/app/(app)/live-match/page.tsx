@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { MatchEvent, EventType, PastMatch } from '@/types';
-import { matchesData, penaltySubTypes, nonDecisionSubTypes } from '@/types';
+import { matchesData, penaltySubTypes, nonDecisionSubTypes, upcomingMatchesData } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertTriangle,
@@ -32,6 +32,13 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const eventIcons: Record<EventType, React.ElementType> = {
   Penalty: ShieldAlert,
@@ -141,6 +148,7 @@ export default function MatchPage() {
   const [teamB, setTeamB] = useState('Team B');
   const [competition, setCompetition] = useState('U21');
   const [venue, setVenue] = useState('Local Pitch');
+  const [selectedUpcomingMatchId, setSelectedUpcomingMatchId] = useState<number | null>(null);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -197,6 +205,13 @@ export default function MatchPage() {
       title: "Match Saved!",
       description: "The live match has been saved to your history.",
     });
+
+    if (selectedUpcomingMatchId) {
+      const index = upcomingMatchesData.findIndex(m => m.id === selectedUpcomingMatchId);
+      if (index > -1) {
+        upcomingMatchesData.splice(index, 1);
+      }
+    }
   
     // Reset state for next match
     setTime(0);
@@ -205,8 +220,22 @@ export default function MatchPage() {
     setTeamB('Team B');
     setCompetition('U21');
     setVenue('Local Pitch');
+    setSelectedUpcomingMatchId(null);
   
     router.push(`/matches/${newMatch.id}`);
+  };
+
+  const handleSelectUpcomingMatch = (matchId: string) => {
+    const id = parseInt(matchId, 10);
+    const selectedMatch = upcomingMatchesData.find(m => m.id === id);
+    if (selectedMatch) {
+      setSelectedUpcomingMatchId(id);
+      const teams = selectedMatch.teams.split(' vs ');
+      setTeamA(teams[0] || 'Team A');
+      setTeamB(teams[1] || 'Team B');
+      setCompetition(selectedMatch.competition);
+      setVenue(selectedMatch.location);
+    }
   };
 
   return (
@@ -222,9 +251,24 @@ export default function MatchPage() {
           <Card>
             <CardHeader>
                 <CardTitle>Match Setup</CardTitle>
-                <CardDescription>Enter the details for the match before you start the timer.</CardDescription>
+                <CardDescription>Enter the details for the match or select a planned match to begin.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="upcoming-match">Select Planned Match (Optional)</Label>
+                  <Select onValueChange={handleSelectUpcomingMatch} disabled={isRunning || events.length > 0}>
+                    <SelectTrigger id="upcoming-match">
+                      <SelectValue placeholder="Select from your planned matches" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {upcomingMatchesData.map(match => (
+                        <SelectItem key={match.id} value={match.id.toString()}>
+                          {match.teams} - {match.date}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="grid md:grid-cols-2 gap-4">
                     <div>
                         <Label htmlFor="teamA">Team A (Home)</Label>
