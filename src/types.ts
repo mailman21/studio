@@ -199,6 +199,7 @@ export interface UpcomingMatch {
   competition: string;
   location: string;
   notes?: string;
+  prepDocUrl?: string;
 }
 
 export const upcomingMatchesData: UpcomingMatch[] = [

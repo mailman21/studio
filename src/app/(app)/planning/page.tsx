@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { upcomingMatchesData, type UpcomingMatch } from '@/types';
-import { Calendar, MapPin, PlusCircle } from 'lucide-react';
+import { Calendar, MapPin, PlusCircle, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { NewMatchDialog } from '@/components/new-match-dialog';
 
@@ -15,6 +15,8 @@ export default function PlanningPage() {
     const [matches, setMatches] = useState<UpcomingMatch[]>(() => JSON.parse(JSON.stringify(upcomingMatchesData)));
     const [isNewMatchDialogOpen, setIsNewMatchDialogOpen] = useState(false);
     const { toast } = useToast();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
 
     const handleNoteChange = (matchId: number, newNotes: string) => {
         const matchIndex = upcomingMatchesData.findIndex(m => m.id === matchId);
@@ -45,6 +47,35 @@ export default function PlanningPage() {
             description: `${newMatch.teams} has been added to your upcoming matches.`,
         });
     };
+
+    const handleUploadClick = (matchId: number) => {
+        setSelectedMatchId(matchId);
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file && selectedMatchId !== null) {
+            const matchIndex = upcomingMatchesData.findIndex(m => m.id === selectedMatchId);
+            if (matchIndex > -1) {
+                // In a real app, you'd upload the file and store the URL.
+                // For this demo, we'll just store the file name.
+                upcomingMatchesData[matchIndex].prepDocUrl = file.name;
+            }
+
+            setMatches(currentMatches =>
+                currentMatches.map(match =>
+                    match.id === selectedMatchId ? { ...match, prepDocUrl: file.name } : match
+                )
+            );
+            
+            toast({
+                title: 'Prep Document Uploaded',
+                description: `${file.name} has been attached to the match.`,
+            });
+        }
+    };
+
 
     useEffect(() => {
         setMatches(JSON.parse(JSON.stringify(upcomingMatchesData)));
@@ -90,6 +121,19 @@ export default function PlanningPage() {
                                         placeholder="Add your pre-match thoughts, team analysis, key players to watch... Notes save automatically."
                                     />
                                 </CardContent>
+                                <CardFooter className="justify-between items-center">
+                                    <div>
+                                    {match.prepDocUrl && (
+                                        <p className="text-sm text-muted-foreground">
+                                        Attached: <span className="font-medium text-foreground">{match.prepDocUrl}</span>
+                                        </p>
+                                    )}
+                                    </div>
+                                    <Button variant="outline" size="sm" onClick={() => handleUploadClick(match.id)}>
+                                        <Upload className="mr-2 h-4 w-4" />
+                                        {match.prepDocUrl ? 'Replace Prep Doc' : 'Upload Prep Doc'}
+                                    </Button>
+                                </CardFooter>
                             </Card>
                         ))
                     ) : (
@@ -105,6 +149,13 @@ export default function PlanningPage() {
                 isOpen={isNewMatchDialogOpen}
                 onOpenChange={setIsNewMatchDialogOpen}
                 onSave={handleAddNewMatch}
+            />
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
+                accept=".doc,.docx,.xls,.xlsx,.ppt,.pptx,.pdf"
             />
         </div>
     );
