@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { upcomingMatchesData, type UpcomingMatch } from '@/types';
-import { Calendar, MapPin, PlusCircle, Upload, CalendarDown } from 'lucide-react';
+import { Calendar, MapPin, PlusCircle, Upload, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { NewMatchDialog } from '@/components/new-match-dialog';
 
@@ -174,7 +174,7 @@ export default function PlanningPage() {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <Button variant="outline" size="sm" onClick={() => handleAddToCalendar(match)}>
-                                            <CalendarDown className="mr-2 h-4 w-4" />
+                                            <Download className="mr-2 h-4 w-4" />
                                             Add to Calendar
                                         </Button>
                                         <Button variant="outline" size="sm" onClick={() => handleUploadClick(match.id)}>
