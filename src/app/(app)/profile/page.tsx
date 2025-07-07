@@ -34,8 +34,11 @@ import {
 import Image from 'next/image';
 import { useRef, useState, useEffect } from 'react';
 import { refereeProfileData, users } from '@/lib/users';
-import type { RefereeProfile, FitnessTest, ScheduleItem, UserRole } from '@/types';
+import type { RefereeProfile, FitnessTest, ScheduleItem, UserRole, VideoClip, VideoClipCategory } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { videoClipCategories } from '@/types';
+import { Badge } from '@/components/ui/badge';
 
 function FitnessTestDialog({ isOpen, onOpenChange, onSave, test }: { isOpen: boolean, onOpenChange: (open: boolean) => void, onSave: (test: FitnessTest) => void, test: FitnessTest | null }) {
     const [formData, setFormData] = useState<Omit<FitnessTest, 'id'>>({ test: '', result: '', date: '' });
@@ -136,9 +139,64 @@ function TrainingScheduleDialog({ isOpen, onOpenChange, onSave, item }: { isOpen
     );
 }
 
+function VideoClipDialog({ isOpen, onOpenChange, onSave, clip }: { isOpen: boolean, onOpenChange: (open: boolean) => void, onSave: (clip: VideoClip) => void, clip: VideoClip | null }) {
+    const [formData, setFormData] = useState<Omit<VideoClip, 'id'>>({ title: '', description: '', category: 'Personal Review', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby analysis' });
+
+    useEffect(() => {
+        if (clip) {
+            setFormData({ title: clip.title, description: clip.description, category: clip.category, thumbnail: clip.thumbnail, hint: clip.hint });
+        } else {
+            setFormData({ title: '', description: '', category: 'Personal Review', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby analysis' });
+        }
+    }, [clip, isOpen]);
+
+    const handleChange = (field: keyof Omit<VideoClip, 'id'>, value: string) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleSave = () => {
+        onSave({ id: clip?.id || Date.now(), ...formData });
+    };
+
+    return (
+        <Dialog open={isOpen} onOpenChange={onOpenChange}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{clip ? 'Edit Video Clip' : 'Add Video Clip'}</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="clip-title">Title</Label>
+                        <Input id="clip-title" value={formData.title} onChange={e => handleChange('title', e.target.value)} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="clip-category">Category</Label>
+                        <Select onValueChange={(value) => handleChange('category', value as VideoClipCategory)} value={formData.category}>
+                            <SelectTrigger id="clip-category">
+                                <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {videoClipCategories.map(category => (
+                                    <SelectItem key={category} value={category}>{category}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="clip-description">Description</Label>
+                        <Textarea id="clip-description" value={formData.description} onChange={e => handleChange('description', e.target.value)} />
+                    </div>
+                </div>
+                <DialogFooter>
+                    <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+                    <Button onClick={handleSave}>Save</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}
 
 export default function ProfilePage() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
@@ -149,6 +207,9 @@ export default function ProfilePage() {
   
   const [isTrainingScheduleDialogOpen, setIsTrainingScheduleDialogOpen] = useState(false);
   const [editingScheduleItem, setEditingScheduleItem] = useState<ScheduleItem | null>(null);
+
+  const [isVideoClipDialogOpen, setIsVideoClipDialogOpen] = useState(false);
+  const [editingVideoClip, setEditingVideoClip] = useState<VideoClip | null>(null);
 
   useEffect(() => {
     // This check is client-side only.
@@ -175,18 +236,6 @@ export default function ProfilePage() {
         title: 'Profile Saved',
         description: 'Your changes have been successfully saved.',
       });
-    }
-  };
-
-  const handleUploadClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      console.log('Selected file:', file.name);
-      alert(`File "${file.name}" selected. In a real app, this would be uploaded.`);
     }
   };
 
@@ -236,6 +285,29 @@ export default function ProfilePage() {
     setProfile({ ...profile, trainingSchedule: profile.trainingSchedule.filter(s => s.id !== itemId) });
   };
   
+  const handleOpenVideoClipDialog = (clip: VideoClip | null) => {
+    setEditingVideoClip(clip);
+    setIsVideoClipDialogOpen(true);
+  };
+  
+  const handleSaveVideoClip = (clip: VideoClip) => {
+    if (!profile) return;
+    const newProfile = { ...profile };
+    if (editingVideoClip) {
+        newProfile.videoClips = profile.videoClips.map(c => c.id === clip.id ? clip : c);
+    } else {
+        newProfile.videoClips = [...profile.videoClips, { ...clip, id: Date.now() }];
+    }
+    setProfile(newProfile);
+    setIsVideoClipDialogOpen(false);
+    setEditingVideoClip(null);
+  };
+
+  const handleDeleteVideoClip = (clipId: number) => {
+    if (!profile) return;
+    setProfile({ ...profile, videoClips: profile.videoClips.filter(c => c.id !== clipId) });
+  };
+
   const currentUser = users.find(u => u.email === currentUserEmail);
 
   if (!currentUser) {
@@ -476,26 +548,19 @@ export default function ProfilePage() {
         </div>
         
         <Card>
-            <CardHeader>
-                <CardTitle>Video Library</CardTitle>
-                <CardDescription>
-                    Upload and review video clips for learning and analysis.
-                </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>Video Library</CardTitle>
+                    <CardDescription>
+                        Upload and review video clips for learning and analysis.
+                    </CardDescription>
+                </div>
+                 <Button onClick={() => handleOpenVideoClipDialog(null)}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Clip
+                </Button>
             </CardHeader>
             <CardContent>
-                <div className="flex justify-end mb-4">
-                    <Button onClick={handleUploadClick}>
-                        <Upload className="mr-2 h-4 w-4" />
-                        Upload Clip
-                    </Button>
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleFileChange}
-                        className="hidden"
-                        accept="video/*"
-                    />
-                </div>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {profile.videoClips.map((clip) => (
                         <div key={clip.id} className="border rounded-lg overflow-hidden group">
@@ -510,9 +575,22 @@ export default function ProfilePage() {
                                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                     <PlayCircle className="h-12 w-12 text-white" />
                                 </div>
+                                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button variant="outline" size="icon" className="h-7 w-7 bg-background/80 hover:bg-muted" onClick={() => handleOpenVideoClipDialog(clip)}>
+                                        <Pencil className="h-4 w-4" />
+                                        <span className="sr-only">Edit</span>
+                                    </Button>
+                                    <Button variant="destructive" size="icon" className="h-7 w-7" onClick={() => handleDeleteVideoClip(clip.id)}>
+                                        <Trash2 className="h-4 w-4" />
+                                        <span className="sr-only">Delete</span>
+                                    </Button>
+                                </div>
                             </div>
                             <div className="p-4 bg-card">
-                                <h3 className="font-semibold truncate">{clip.title}</h3>
+                                <div className="flex justify-between items-start">
+                                    <h3 className="font-semibold truncate pr-2">{clip.title}</h3>
+                                    <Badge variant="secondary">{clip.category}</Badge>
+                                </div>
                                 <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{clip.description}</p>
                             </div>
                         </div>
@@ -534,6 +612,13 @@ export default function ProfilePage() {
         onOpenChange={setIsTrainingScheduleDialogOpen}
         onSave={handleSaveScheduleItem}
         item={editingScheduleItem}
+      />
+
+      <VideoClipDialog
+        isOpen={isVideoClipDialogOpen}
+        onOpenChange={setIsVideoClipDialogOpen}
+        onSave={handleSaveVideoClip}
+        clip={editingVideoClip}
       />
     </div>
   );

@@ -36,7 +36,18 @@ export const nonDecisionSubTypes = ['Offside', 'ND', 'Error', 'Foul Play', 'Scru
 
 export type FitnessTest = { id: string; test: string; result: string; date: string };
 export type ScheduleItem = { id: string; activity: string; date: string; location: string };
-export type VideoClip = { id: number; title: string; thumbnail: string; hint: string, description: string };
+
+export const videoClipCategories = ['Match Prep', 'Coach Analysis', 'Personal Review', 'Skills Drill'] as const;
+export type VideoClipCategory = typeof videoClipCategories[number];
+
+export type VideoClip = { 
+    id: number; 
+    title: string; 
+    thumbnail: string; 
+    hint: string, 
+    description: string;
+    category: VideoClipCategory;
+};
 
 export interface RefereeProfile {
     age: string;

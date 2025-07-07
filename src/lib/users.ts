@@ -52,12 +52,12 @@ export const refereeProfileData: Record<string, RefereeProfile> = {
           { id: '5', activity: 'Match Prep', date: 'Friday, 6:00 PM', location: 'Clubhouse' },
       ],
       videoClips: [
-          { id: 1, title: 'Breakdown Decision', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby breakdown', description: 'Reviewing a key decision at the breakdown from the last match.' },
-          { id: 2, title: 'Scrum Engagement', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby scrum', description: 'Analyzing scrum setup and engagement sequence.' },
-          { id: 3, title: 'Offside Line Management', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby defense', description: 'Checking positioning and management of the offside line during open play.' },
+          { id: 1, title: 'Breakdown Decision', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby breakdown', description: 'Reviewing a key decision at the breakdown from the last match.', category: 'Coach Analysis' },
+          { id: 2, title: 'Scrum Engagement', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby scrum', description: 'Analyzing scrum setup and engagement sequence.', category: 'Coach Analysis' },
+          { id: 3, title: 'Offside Line Management', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby defense', description: 'Checking positioning and management of the offside line during open play.', category: 'Coach Analysis' },
       ],
       diaryVideoClips: [
-        { id: 101, title: 'Personal Clip 1', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby tackle', description: 'A tackle I want to analyze for my positioning.' },
+        { id: 101, title: 'Personal Clip 1', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby tackle', description: 'A tackle I want to analyze for my positioning.', category: 'Personal Review' },
       ]
   }
 };
