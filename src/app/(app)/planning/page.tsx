@@ -11,7 +11,8 @@ import { Calendar, MapPin, Edit, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 export default function PlanningPage() {
-    const [matches, setMatches] = useState<UpcomingMatch[]>(upcomingMatchesData);
+    // Use a deep copy so local edits don't affect the master data until saved
+    const [matches, setMatches] = useState<UpcomingMatch[]>(() => JSON.parse(JSON.stringify(upcomingMatchesData)));
     const [editingMatchId, setEditingMatchId] = useState<number | null>(null);
     const { toast } = useToast();
 
@@ -24,10 +25,17 @@ export default function PlanningPage() {
     };
 
     const handleSaveNote = (matchId: number) => {
-        // In a real app, this would save the note to a database.
-        const match = matches.find(m => m.id === matchId);
+        const updatedMatch = matches.find(m => m.id === matchId);
+        if (!updatedMatch) return;
+        
+        // Find the match in the master data source and update it to persist changes for the session
+        const masterMatchIndex = upcomingMatchesData.findIndex(m => m.id === matchId);
+        if (masterMatchIndex !== -1) {
+            upcomingMatchesData[masterMatchIndex].notes = updatedMatch.notes;
+        }
+
         toast({
-            title: `Notes for ${match?.teams} saved!`,
+            title: `Notes for ${updatedMatch.teams} saved!`,
         });
         setEditingMatchId(null);
     };

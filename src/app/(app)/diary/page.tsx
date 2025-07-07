@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageHeader } from '@/components/page-header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,20 +8,49 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Save, Target, ClipboardCheck, BookOpen } from 'lucide-react';
+import { refereeProfileData } from '@/lib/users';
+import type { RefereeProfile, UserRole } from '@/types';
 
 export default function DiaryPage() {
     const { toast } = useToast();
-    const [goals, setGoals] = useState('1. Improve positioning at the scrum.\n2. Quicker decisions at the breakdown.');
-    const [prep, setPrep] = useState('Reviewed clips from last week\'s game. Focused on communication with assistant referees.');
-    const [notes, setNotes] = useState('Feeling confident for the upcoming match. Weather forecast looks clear.');
+    const [profile, setProfile] = useState<RefereeProfile | null>(null);
+    const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const email = sessionStorage.getItem('userEmail');
+            const role = sessionStorage.getItem('userRole') as UserRole;
+            if (email && role === 'referee' && refereeProfileData[email]) {
+                setCurrentUserEmail(email);
+                setProfile(JSON.parse(JSON.stringify(refereeProfileData[email])));
+            }
+        }
+    }, []);
+    
+    const handleProfileChange = (field: keyof RefereeProfile, value: string) => {
+        setProfile(prev => prev ? { ...prev, [field]: value } : null);
+    };
 
     const handleSaveChanges = () => {
-        // In a real app, this would save to a database.
-        toast({
-            title: 'Diary Saved!',
-            description: 'Your notes and goals have been updated.',
-        });
+        if (currentUserEmail && profile) {
+            refereeProfileData[currentUserEmail] = JSON.parse(JSON.stringify(profile));
+            toast({
+                title: 'Diary Saved!',
+                description: 'Your notes and goals have been updated.',
+            });
+        }
     };
+    
+    if (!profile) {
+        return (
+            <div className="flex flex-col h-full">
+                <PageHeader title="My Diary & Prep" />
+                <main className="flex-1 overflow-y-auto p-4 md:p-6 flex items-center justify-center">
+                    <p>Loading diary...</p>
+                </main>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col h-full">
@@ -46,8 +75,8 @@ export default function DiaryPage() {
                         <Label htmlFor="goals-textarea" className="sr-only">Personal Goals</Label>
                         <Textarea
                             id="goals-textarea"
-                            value={goals}
-                            onChange={(e) => setGoals(e.target.value)}
+                            value={profile.developmentGoals}
+                            onChange={(e) => handleProfileChange('developmentGoals', e.target.value)}
                             rows={5}
                             placeholder="e.g., Maintain 5m discipline, clearer communication..."
                         />
@@ -69,8 +98,8 @@ export default function DiaryPage() {
                             <Label htmlFor="prep-textarea" className="sr-only">Match Prep Diary</Label>
                             <Textarea
                                 id="prep-textarea"
-                                value={prep}
-                                onChange={(e) => setPrep(e.target.value)}
+                                value={profile.matchPrepDiary}
+                                onChange={(e) => handleProfileChange('matchPrepDiary', e.target.value)}
                                 rows={8}
                                 placeholder="e.g., Reviewed team lineups, watched clips of specific players..."
                             />
@@ -90,8 +119,8 @@ export default function DiaryPage() {
                              <Label htmlFor="notes-textarea" className="sr-only">General Notes</Label>
                             <Textarea
                                 id="notes-textarea"
-                                value={notes}
-                                onChange={(e) => setNotes(e.target.value)}
+                                value={profile.generalNotes}
+                                onChange={(e) => handleProfileChange('generalNotes', e.target.value)}
                                 rows={8}
                                 placeholder="e.g., Post-match thoughts, physical condition, mentality..."
                             />

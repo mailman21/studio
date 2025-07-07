@@ -47,6 +47,9 @@ export interface RefereeProfile {
     fitnessTests: FitnessTest[];
     trainingSchedule: ScheduleItem[];
     videoClips: VideoClip[];
+    developmentGoals: string;
+    matchPrepDiary: string;
+    generalNotes: string;
 }
 
 const generateGpsData = (durationInSeconds: number, points: number): GpsPoint[] => {

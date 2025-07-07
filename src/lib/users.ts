@@ -37,6 +37,9 @@ export const refereeProfileData: Record<string, RefereeProfile> = {
       workOns: '- Maintain 5m discipline at scrum\n- Clearer communication at breakdown',
       preMatchNotes: 'Lions scrum is dominant. Cheetahs have a fast backline. Watch for early engagement at scrum time.',
       videoReview: 'Focus on breakdown decisions from last week\'s game. Review positioning on the try line.',
+      developmentGoals: '1. Improve positioning at the scrum.\n2. Quicker decisions at the breakdown.',
+      matchPrepDiary: 'Reviewed clips from last week\'s game. Focused on communication with assistant referees.',
+      generalNotes: 'Feeling confident for the upcoming match. Weather forecast looks clear.',
       fitnessTests: [
           { id: '1', test: '40m Sprint', result: '5.2s', date: '2024-07-15' },
           { id: '2', test: 'Yo-Yo Test', result: 'Level 18.5', date: '2024-07-15' },
