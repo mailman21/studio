@@ -19,6 +19,8 @@ import {
   Shield,
   LayoutDashboard,
   CreditCard,
+  BookText,
+  CalendarPlus,
 } from 'lucide-react';
 
 const Logo = () => (
@@ -69,6 +71,22 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <Link href="/matches">
                   <Shield />
                   <span>Past Matches</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname.startsWith('/diary')} tooltip={{children: 'My Diary'}}>
+                <Link href="/diary">
+                  <BookText />
+                  <span>My Diary</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname.startsWith('/planning')} tooltip={{children: 'Planning'}}>
+                <Link href="/planning">
+                  <CalendarPlus />
+                  <span>Planning</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

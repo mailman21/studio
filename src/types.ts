@@ -177,3 +177,38 @@ export const matchesData: PastMatch[] = [
         gpsData: generateGpsData(4800, 150),
     },
 ];
+
+export interface UpcomingMatch {
+  id: number;
+  date: string;
+  teams: string;
+  competition: string;
+  location: string;
+  notes?: string;
+}
+
+export const upcomingMatchesData: UpcomingMatch[] = [
+  {
+    id: 1,
+    date: '2024-08-10',
+    teams: 'Sharks vs Bulls',
+    competition: 'Currie Cup',
+    location: 'Kings Park, Durban',
+    notes: 'Expecting a fast-paced game. Focus on breakdown accuracy.',
+  },
+  {
+    id: 2,
+    date: '2024-08-17',
+    teams: 'Lions vs Stormers',
+    competition: 'Currie Cup',
+    location: 'Emirates Airline Park, Johannesburg',
+    notes: 'Lions have a strong scrum. Need to manage the engagement sequence carefully.',
+  },
+  {
+    id: 3,
+    date: '2024-08-24',
+    teams: 'Griquas vs Pumas',
+    competition: 'Currie Cup',
+    location: 'Griqua Park, Kimberley',
+  },
+];
