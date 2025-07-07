@@ -48,7 +48,7 @@ export interface RefereeProfile {
     trainingSchedule: ScheduleItem[];
     videoClips: VideoClip[];
     developmentGoals: string;
-    matchPrepDiary: string;
+    diaryVideoClips: VideoClip[];
     generalNotes: string;
 }
 

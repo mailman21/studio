@@ -38,7 +38,6 @@ export const refereeProfileData: Record<string, RefereeProfile> = {
       preMatchNotes: 'Lions scrum is dominant. Cheetahs have a fast backline. Watch for early engagement at scrum time.',
       videoReview: 'Focus on breakdown decisions from last week\'s game. Review positioning on the try line.',
       developmentGoals: '1. Improve positioning at the scrum.\n2. Quicker decisions at the breakdown.',
-      matchPrepDiary: 'Reviewed clips from last week\'s game. Focused on communication with assistant referees.',
       generalNotes: 'Feeling confident for the upcoming match. Weather forecast looks clear.',
       fitnessTests: [
           { id: '1', test: '40m Sprint', result: '5.2s', date: '2024-07-15' },
@@ -56,6 +55,9 @@ export const refereeProfileData: Record<string, RefereeProfile> = {
           { id: 1, title: 'Breakdown Decision', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby breakdown', description: 'Reviewing a key decision at the breakdown from the last match.' },
           { id: 2, title: 'Scrum Engagement', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby scrum', description: 'Analyzing scrum setup and engagement sequence.' },
           { id: 3, title: 'Offside Line Management', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby defense', description: 'Checking positioning and management of the offside line during open play.' },
+      ],
+      diaryVideoClips: [
+        { id: 101, title: 'Personal Clip 1', thumbnail: 'https://placehold.co/600x400.png', hint: 'rugby tackle', description: 'A tackle I want to analyze for my positioning.' },
       ]
   }
 };
