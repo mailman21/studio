@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import type { MatchEvent, EventType, PastMatch } from '@/types';
-import { matchesData } from '@/types';
+import { matchesData, penaltySubTypes, nonDecisionSubTypes } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import {
   AlertTriangle,
@@ -54,11 +54,8 @@ function TeamPanel({
   teamName: string;
   team: 'A' | 'B';
   onLogEvent: (type: EventType, subType?: string) => void;
-  onOpenDialog: (type: EventType) => void;
+  onOpenDialog: (type: EventType, subType?: string) => void;
 }) {
-  const penaltySubTypes = ['Offside', 'Breakdown', 'Scrum', 'Lineout', 'L2m', 'Foul Play'];
-  const nonDecisionSubTypes = ['Offside', 'ND', 'Error', 'Foul Play', 'Scrum', 'L2M', 'General play'];
-
   return (
     <Card>
       <CardHeader>
@@ -73,7 +70,7 @@ function TeamPanel({
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             {penaltySubTypes.map(subType => (
-              <DropdownMenuItem key={subType} onClick={() => onOpenDialog('Penalty')}>
+              <DropdownMenuItem key={subType} onClick={() => onOpenDialog('Penalty', subType)}>
                 {subType}
               </DropdownMenuItem>
             ))}
@@ -92,7 +89,7 @@ function TeamPanel({
           </DropdownMenuTrigger>
           <DropdownMenuContent>
             {nonDecisionSubTypes.map(subType => (
-              <DropdownMenuItem key={subType} onClick={() => onOpenDialog('Non-Decision')}>
+              <DropdownMenuItem key={subType} onClick={() => onOpenDialog('Non-Decision', subType)}>
                 {subType}
               </DropdownMenuItem>
             ))}
@@ -173,9 +170,10 @@ export default function MatchPage() {
 
   const handleOpenDialog = (
     team: 'A' | 'B' | null,
-    type: EventType
+    type: EventType,
+    subType?: string
   ) => {
-    setDialogState({ isOpen: true, team, type });
+    setDialogState({ isOpen: true, team, type, subType });
   };
   
   const handleFinishMatch = () => {
@@ -262,13 +260,13 @@ export default function MatchPage() {
             teamName={teamA}
             team="A"
             onLogEvent={(type, subType) => handleLogEvent('A', type, subType)}
-            onOpenDialog={(type) => handleOpenDialog('A', type)}
+            onOpenDialog={(type, subType) => handleOpenDialog('A', type, subType)}
           />
           <TeamPanel
             teamName={teamB}
             team="B"
             onLogEvent={(type, subType) => handleLogEvent('B', type, subType)}
-            onOpenDialog={(type) => handleOpenDialog('B', type)}
+            onOpenDialog={(type, subType) => handleOpenDialog('B', type, subType)}
           />
         </div>
 

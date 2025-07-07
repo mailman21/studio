@@ -29,6 +29,7 @@ export interface DialogState {
   isOpen: boolean;
   team?: 'A' | 'B' | null;
   type?: EventType;
+  subType?: string;
 }
 
 interface EventDialogProps {
@@ -38,7 +39,7 @@ interface EventDialogProps {
 }
 
 export function EventDialog({ dialogState, setDialogState, addEvent }: EventDialogProps) {
-  const { isOpen, team, type } = dialogState;
+  const { isOpen, team, type, subType: initialSubType } = dialogState;
   const [description, setDescription] = useState('');
   const [subType, setSubType] = useState<string | undefined>();
   const [isCategorizing, setIsCategorizing] = useState(false);
@@ -47,9 +48,9 @@ export function EventDialog({ dialogState, setDialogState, addEvent }: EventDial
   useEffect(() => {
     if (isOpen) {
       setDescription('');
-      setSubType(undefined);
+      setSubType(initialSubType);
     }
-  }, [isOpen]);
+  }, [isOpen, initialSubType]);
 
   const handleClose = () => {
     setDialogState({ isOpen: false });
